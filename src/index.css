@@ -74,5 +74,51 @@ body {
 }
 
 .footer{
-  background-color: #f0efef;
+  background-color: #eeeeee;
+}
+
+/* For sliding animation */
+.form-container {
+  position: relative;
+  opacity: 0;
+  animation: slideIn 0.5s ease forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
+
+
+.form-create {
+  margin-top: -5px;
+  padding: 10px; 
+ 
+  max-height: 300px; /* Sets a maximum height, adjust as needed */
+ 
+
+}
+ .heading{
+  font-size: 20px;
+  margin-top: 40px;
+ }
+ @keyframes line-load {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-line-load {
+  animation: line-load 2s linear infinite;
 }

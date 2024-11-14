@@ -29,7 +29,7 @@ const Navbar = ({ isHome }) => {
     <nav
       className={`fixed top-0 w-full z-10 px-4 py-5 flex justify-between items-center transition-colors duration-300 ${
         isScrolled
-          ? 'bg-white border-b border-gray-300 text-black'
+          ? 'bg-[#eeeeee] border-b border-gray-300 text-black'
           : isHome
           ? 'bg-transparent text-white'
           : 'bg-white text-black'
