@@ -29,17 +29,17 @@ const Navbar = ({ isHome }) => {
     <nav
       className={`fixed top-0 w-full z-10 px-4 py-5 flex justify-between items-center transition-colors duration-300 ${
         isScrolled
-          ? 'bg-[#eeeeee] border-b border-gray-300 text-black'
+          ? 'bg-gray-800 text-black'
           : isHome
-          ? 'bg-transparent text-white'
-          : 'bg-white text-black'
+          ? 'bg-transparent text-black'
+          : 'bg-gray-900 text-black'
       }`}
     >
       <div className="flex items-center space-x-2">
         <div className='icon'>
-        <FaBookOpen className="text-[#f44336] text-2xl text-[50px]" />
+        <FaBookOpen className="text-[#f44336] text-2xl text-[50px] " />
         </div>
-        <span className="text-xl font-bold">ImBoni</span>
+        <span className="text-xl font-bold text-white">ImBoni</span>
       </div>
       <div className="md:flex space-x-6 font-medium">
         {['Home', 'About', 'Pricing', 'Professors', 'Goals', 'Blogs', 'Contact', 'Language'].map((link) => (
@@ -51,7 +51,7 @@ const Navbar = ({ isHome }) => {
                 ? 'text-[#f44336] after:bg-[#f44336]'
                 : isHome && !isScrolled
                 ? 'text-white hover:text-[#f44336]'
-                : 'text-black hover:text-[#f44336]'
+                : 'text-white hover:text-[#f44336]'
             }`}
           >
             {link}
