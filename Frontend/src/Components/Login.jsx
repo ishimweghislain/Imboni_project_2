@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// Login.js
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const LoginForm = ({ onToggle }) => {
   return (
@@ -11,7 +13,7 @@ const LoginForm = ({ onToggle }) => {
             className="h-full w-full object-cover rounded-l-lg"
           />
         </div>
-        <div className="flex w-1/2 flex-col items-center justify-center p-8">
+        <div className="flex w-1/2 flex-col items-center justify-center p-8 bg-[#f4f3f3]">
           <h2 className="mb-4 text-2xl font-bold">Sign In</h2>
           <div className="mb-4 w-full">
             <label htmlFor="email" className="block text-gray-700 font-bold mb-2">
@@ -21,7 +23,7 @@ const LoginForm = ({ onToggle }) => {
               type="email"
               id="email"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="ishimweghislain82@gmail.com"
+              placeholder="example@gmail.com"
             />
           </div>
           <div className="mb-6 w-full">
@@ -43,7 +45,7 @@ const LoginForm = ({ onToggle }) => {
               Sign In
             </button>
             <a
-              className="inline-block align-baseline font-bold text-sm text-[#f44336] hover:text-gray-800"
+              className="inline-block align-baseline font-bold text-md text-black hover:text-[#f44336]"
               href="#"
               onClick={(e) => {
                 e.preventDefault();
@@ -70,7 +72,7 @@ const CreateAccountForm = ({ onToggle }) => {
             className="h-full w-full object-cover rounded-l-lg"
           />
         </div>
-        <div className="flex w-1/2 flex-col items-center justify-center p-8">
+        <div className="flex w-1/2 flex-col items-center justify-center p-8 bg-[#f4f3f3]">
           <b><h2 className="heading">Create Account</h2></b>
           <div className="mb-4 flex w-full">
             <div className="mr-2 w-1/2">
@@ -104,7 +106,7 @@ const CreateAccountForm = ({ onToggle }) => {
               type="email"
               id="email"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder="ishimweghislain82@gmail.com"
+              placeholder="example@gmail.com"
             />
           </div>
           <div className="mb-4 w-full">
@@ -124,10 +126,10 @@ const CreateAccountForm = ({ onToggle }) => {
             </label>
             <select
               id="role"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline cursor-pointer"
             >
-              <option>User</option>
-              <option>Admin</option>
+              <option>Student</option>
+              <option>Teacher</option>
             </select>
           </div>
           <div className="flex w-full items-center justify-between">
@@ -138,7 +140,7 @@ const CreateAccountForm = ({ onToggle }) => {
               Sign Up
             </button>
             <a
-              className="inline-block align-baseline font-bold text-sm text-[#f44336] hover:text-gray-800"
+              className="inline-block align-baseline font-bold text-sm text-black hover:text-[#f44336]"
               href="#"
               onClick={(e) => {
                 e.preventDefault();
@@ -155,7 +157,14 @@ const CreateAccountForm = ({ onToggle }) => {
 };
 
 const Login = () => {
+  const location = useLocation();  // Use location to get state
   const [showCreateAccount, setShowCreateAccount] = useState(false);
+
+  useEffect(() => {
+    if (location.state && location.state.showCreateAccount) {
+      setShowCreateAccount(true);  // Initialize state based on location
+    }
+  }, [location]);
 
   const toggleForm = () => {
     setShowCreateAccount((prevState) => !prevState);
