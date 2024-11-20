@@ -42,7 +42,7 @@ const Navbar = ({ isHome }) => {
         <span className="text-xl font-bold text-white">ImBoni</span>
       </div>
       <div className="md:flex space-x-6 font-medium">
-        {['Home', 'About', 'Pricing', 'Professors', 'Goals', 'Blogs', 'Contact', 'Language'].map((link) => (
+        {['Home', 'About', 'Pricing', 'Professors', 'Goals', 'Blogs', 'Contact',].map((link) => (
           <Link
             key={link}
             to={`/${link.toLowerCase()}`}

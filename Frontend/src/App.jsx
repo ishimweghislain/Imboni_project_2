@@ -11,7 +11,6 @@ import Pricing from './Pages/Pricing';
 import Goals from './Pages/Goals';
 import Blogs from './Pages/Blogs';
 import Contact from './Pages/Contact';
-import Language from './Pages/Language';
 import Login from './Components/Login';
 import Studentdashboard from './Dashboards/Studentsdashboard';
 import Teacherdashboard from './Dashboards/Teachersdashboard';
@@ -70,7 +69,6 @@ function App() {
         <Route path="/goals" element={<MainRouteWrapper element={<Goals />} />} />
         <Route path="/blogs" element={<MainRouteWrapper element={<Blogs />} />} />
         <Route path="/contact" element={<MainRouteWrapper element={<Contact />} />} />
-        <Route path="/language" element={<MainRouteWrapper element={<Language />} />} />
         <Route path="/login" element={<MainRouteWrapper element={<Login />} />} />
         
         {/* Protected Dashboard Routes */}
