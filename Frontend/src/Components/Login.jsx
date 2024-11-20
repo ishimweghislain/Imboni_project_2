@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginForm = ({ onToggle, onLogin }) => {
   const [email, setEmail] = useState('');
@@ -10,13 +11,30 @@ const LoginForm = ({ onToggle, onLogin }) => {
     e.preventDefault();
     const userData = {
       email,
-      password,
-      role: 'student'
+      password
     };
-    
-    localStorage.setItem('user', JSON.stringify(userData));
-    onLogin(userData);
-    navigate('/student-dashboard');
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/users/login', userData);
+      const { token, user } = response.data;
+
+      // Save the token and user details in localStorage
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
+
+      // Pass user data to parent component
+      onLogin(user);
+
+      // Redirect user based on their role
+      if (user.role === 'student') {
+        navigate('/student-dashboard');
+      } else {
+        navigate('/teacher-dashboard');
+      }
+    } catch (error) {
+      console.error('Login failed:', error.response?.data || error.message);
+      alert('Invalid email or password');
+    }
   };
 
   return (
@@ -90,17 +108,26 @@ const CreateAccountForm = ({ onToggle }) => {
     e.preventDefault();
     setLoading(true);
 
-   
-    setTimeout(() => {
-      localStorage.setItem('user', JSON.stringify(formData));
+    try {
+      // Make the API call to register the user
+      const response = await axios.post('http://localhost:5000/api/users/register', formData);
+      console.log(response.data);
       setLoading(false);
       
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(formData));
+
+      // Navigate to the corresponding dashboard based on user role
       if (formData.role === 'student') {
         navigate('/student-dashboard');
       } else {
         navigate('/teacher-dashboard');
       }
-    }, 8000); 
+    } catch (error) {
+      setLoading(false);
+      console.error(error.response.data);
+      alert('Error registering user');
+    }
   };
 
   return (
@@ -118,7 +145,6 @@ const CreateAccountForm = ({ onToggle }) => {
           <div className="flex w-1/2 flex-col items-center justify-center p-8 bg-[#f4f3f3]">
             <b><h2 className="heading mb-4 text-2xl">Create Account</h2></b>
             <form onSubmit={handleSubmit} className="w-full">
-              {/* Form fields */}
               <div className="mb-4 flex w-full">
                 <div className="mr-2 w-1/2">
                   <label htmlFor="firstName" className="block text-gray-700 font-bold mb-2">First Name</label>
@@ -171,7 +197,7 @@ const CreateAccountForm = ({ onToggle }) => {
                   id="role"
                   value={formData.role}
                   onChange={(e) => setFormData({...formData, role: e.target.value})}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline cursor-pointer"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
@@ -182,17 +208,17 @@ const CreateAccountForm = ({ onToggle }) => {
                   className="bg-[#f44336] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   type="submit"
                 >
-                  Sign Up
+                  Sign up
                 </button>
                 <a
-                  className="inline-block align-baseline font-bold text-sm text-black hover:text-[#f44336]"
+                  className="inline-block align-baseline font-bold text-md text-black hover:text-[#f44336]"
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     onToggle();
                   }}
                 >
-                  Already have an account? Sign In
+                  Do you have an account? Login
                 </a>
               </div>
             </form>
@@ -204,35 +230,19 @@ const CreateAccountForm = ({ onToggle }) => {
 };
 
 const Login = () => {
-  const location = useLocation();
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    if (location.state && location.state.showCreateAccount) {
-      setShowCreateAccount(true);
-    }
-    
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, [location]);
+  const toggleForm = () => setIsLogin(!isLogin);
 
-  const toggleForm = () => {
-    setShowCreateAccount((prevState) => !prevState);
-  };
-
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
+  const handleLogin = (userData) => setUser(userData);
 
   return (
     <div>
-      {showCreateAccount ? (
-        <CreateAccountForm onToggle={toggleForm} />
-      ) : (
+      {isLogin ? (
         <LoginForm onToggle={toggleForm} onLogin={handleLogin} />
+      ) : (
+        <CreateAccountForm onToggle={toggleForm} />
       )}
     </div>
   );
