@@ -10,12 +10,17 @@ import {
 } from 'react-icons/fa';
 
 
+import Teacher_notification from '../Communication/Teacher_notification';
+import Teacher_chat from '../Communication/Teacher_chat';
+import Teacher_people from '../Communication/Student_people';
+
+
 import Myclasses_view from '../Models/Myclasses_view';
 import Passedassignments_view from '../Models/Passedassignments_view';
 import Sharecourses_view from '../Models/Sharecourses_view';
 import Newassignment from '../Models/Newassignment';
 
-
+// Progress Data
 import { MyclassesPData } from '../Progress/MyclassesP';
 import { PassedassignmentsPData } from '../Progress/PassedAssignmentsP';
 import { SharecoursesPData } from '../Progress/SharecoursesP';
@@ -35,7 +40,7 @@ const Teachersdashboard = () => {
 
   const handleCategoryClick = (category) => {
     setActiveCategory(category);
-    setShowOnlyBox(false); 
+    setShowOnlyBox(false);
     setTimeout(() => {
       barChartRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -51,7 +56,6 @@ const Teachersdashboard = () => {
     setShowOnlyBox(false);
   };
 
-  // Animation handling
   const [animate, setAnimate] = useState(false);
   useEffect(() => {
     setTimeout(() => setAnimate(true), 100);
@@ -59,28 +63,12 @@ const Teachersdashboard = () => {
 
   return (
     <div className="flex bg-gray-800 min-h-screen text-white">
-   
+      {/* Left Dashboard: Notifications */}
       <div className="w-1/3 space-y-4 mr-4">
-        <div className="bg-white p-4 rounded-lg text-gray-800">
-          <h2 className="text-xl font-semibold mb-4 text-[#f44336]">Messages/Chats</h2>
-          <div className="space-y-4 overflow-y-auto h-80">
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <p className="font-bold text-gray-700">Principal</p>
-              <p className="text-gray-600">Please update the course syllabus.</p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <p className="font-bold text-gray-700">John Doe</p>
-              <p className="text-gray-600">Can I resubmit the assignment?</p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <p className="font-bold text-gray-700">Jane Smith</p>
-              <p className="text-gray-600">Thank you for the new resources!</p>
-            </div>
-          </div>
-        </div>
+        <Teacher_notification />
       </div>
 
-      
+      {/* Right Dashboard */}
       <div className="w-2/3 space-y-6">
         {showOnlyBox ? (
           <div className="flex flex-col items-center space-y-4">
@@ -96,7 +84,6 @@ const Teachersdashboard = () => {
                 {activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
               </h2>
             </div>
-           
             {activeCategory === 'classes' && <Myclasses_view />}
             {activeCategory === 'passedAssignments' && <Passedassignments_view />}
             {activeCategory === 'shareCourses' && <Sharecourses_view />}

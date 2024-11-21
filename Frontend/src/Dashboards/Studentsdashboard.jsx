@@ -3,22 +3,28 @@ import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { FaBook, FaLaptopCode, FaSearch, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 
+import Student_notification from '../Communication/Student_notification';
+import Student_chat from '../Communication/Student_chat';
+import Student_people from '../Communication/Student_people';
 
 import Myassignments_view from '../Models/Myassignments_view';
 import Mycourses_view from '../Models/Mycourses_view';
 import Myresearches_view from '../Models/Myresearches_view';
 import Viewmarks from '../Models/Viewmarks';
 
-
 import { MyassignmentsPData } from '../Progress/MyassignmentsP';
 import { MycoursesPData } from '../Progress/MycoursesP';
 import { MyresearchesPData } from '../Progress/MyresearchesP';
 import { ViewmarksPData } from '../Progress/ViewmarksP';
 
-const Studentsdashboard = () => {
+const Studentsdashboard = ({ activeToggle }) => {
+  // Set the default state to 'notifications' so that it's visible when the page starts
   const [activeCategory, setActiveCategory] = useState(null);
   const [showOnlyBox, setShowOnlyBox] = useState(false);
   const barChartRef = useRef(null);
+
+  // Set notifications as the default active toggle if no toggle is provided
+  const effectiveActiveToggle = activeToggle || 'notifications';
 
   const chartData = {
     assignments: MyassignmentsPData,
@@ -37,7 +43,7 @@ const Studentsdashboard = () => {
 
   const handleViewClick = (category) => {
     setActiveCategory(category);
-    setShowOnlyBox(true); // Show only the clicked box
+    setShowOnlyBox(true);
   };
 
   const handleBackToAll = () => {
@@ -50,30 +56,26 @@ const Studentsdashboard = () => {
     setTimeout(() => setAnimate(true), 100);
   }, []);
 
+  const renderLeftSidebar = () => {
+    switch (effectiveActiveToggle) {
+      case 'notifications':
+        return <Student_notification />;
+      case 'chat':
+        return <Student_chat />;
+      case 'people':
+        return <Student_people />;
+      default:
+        return <Student_notification />; 
+    }
+  };
+
   return (
     <div className="flex bg-gray-800 min-h-screen text-white">
-      {/* Left Dashboard: Messages/Chats */}
+
       <div className="w-1/3 space-y-4 mr-4">
-        <div className="bg-white p-4 rounded-lg text-gray-800">
-          <h2 className="text-xl font-semibold mb-4 text-[#f44336]">Messages/Chats</h2>
-          <div className="space-y-4 overflow-y-auto h-80">
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <p className="font-bold text-gray-700">John Doe</p>
-              <p className="text-gray-600">Hey! How’s the project going?</p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <p className="font-bold text-gray-700">Jane Smith</p>
-              <p className="text-gray-600">Do you need any help with the assignment?</p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <p className="font-bold text-gray-700">Michael Brown</p>
-              <p className="text-gray-600">Let’s discuss the research topic.</p>
-            </div>
-          </div>
-        </div>
+        {renderLeftSidebar()}
       </div>
 
-      {/* Right Dashboard */}
       <div className="w-2/3 space-y-6">
         {showOnlyBox ? (
           <div className="flex flex-col items-center space-y-4">
@@ -86,7 +88,7 @@ const Studentsdashboard = () => {
                 Back to All
               </button>
               <h2 className="text-xl font-bold text-white">
-                {activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
+                {activeCategory?.charAt(0).toUpperCase() + activeCategory?.slice(1)}
               </h2>
             </div>
             {activeCategory === 'assignments' && <Myassignments_view />}
@@ -97,93 +99,36 @@ const Studentsdashboard = () => {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4">
-              {/* Dashboard Items */}
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'assignments' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform -translate-x-full'}`}
-                onClick={() => handleCategoryClick('assignments')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaBook className="text-3xl" />
-                </div>
-                <h3 className="font-semibold text-lg">My Assignments</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('assignments');
-                  }}
+              {Object.keys(chartData).map((key) => (
+                <div
+                  key={key}
+                  className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
+                    activeCategory === key ? 'bg-[#ff7961]' : 'bg-[#f44336]'
+                  }`}
+                  onClick={() => handleCategoryClick(key)}
                 >
-                  View All
-                </button>
-              </div>
-
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'courses' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform translate-x-full'}`}
-                onClick={() => handleCategoryClick('courses')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaLaptopCode className="text-3xl" />
+                  <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
+                    {key === 'assignments' && <FaBook className="text-3xl" />}
+                    {key === 'courses' && <FaLaptopCode className="text-3xl" />}
+                    {key === 'researches' && <FaSearch className="text-3xl" />}
+                    {key === 'marks' && <FaCheckCircle className="text-3xl" />}
+                  </div>
+                  <h3 className="font-semibold text-lg">
+                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+                  </h3>
+                  <button
+                    className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewClick(key);
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
-                <h3 className="font-semibold text-lg">My Courses</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('courses');
-                  }}
-                >
-                  View All
-                </button>
-              </div>
-
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'researches' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform -translate-x-full'}`}
-                onClick={() => handleCategoryClick('researches')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaSearch className="text-3xl" />
-                </div>
-                <h3 className="font-semibold text-lg">My Researches</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('researches');
-                  }}
-                >
-                  View All
-                </button>
-              </div>
-
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'marks' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform -translate-x-full'}`}
-                onClick={() => handleCategoryClick('marks')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaCheckCircle className="text-3xl" />
-                </div>
-                <h3 className="font-semibold text-lg">View Marks</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('marks');
-                  }}
-                >
-                  View All
-                </button>
-              </div>
+              ))}
             </div>
 
-           
             {activeCategory && chartData[activeCategory] && (
               <div ref={barChartRef} className="mt-6">
                 <h3 className="text-center text-xl font-semibold">

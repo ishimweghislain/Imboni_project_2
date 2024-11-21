@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Navigation from './Dashboards/Navigation';
@@ -30,10 +30,19 @@ const ProtectedRoute = ({ element: Element, allowedRoles }) => {
 };
 
 const DashboardLayout = ({ children }) => {
+  const [activeToggle, setActiveToggle] = useState(null);
+
+  const handleToggle = (type) => {
+   
+    setActiveToggle(type);
+  };
+
   return (
     <div>
-      <Navigation />
-      {children}
+      <Navigation onToggle={handleToggle} />
+      {React.cloneElement(children, { 
+        activeToggle: activeToggle 
+      })}
       <Footer2 />
     </div>
   );
@@ -60,7 +69,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Main routes with MainLayout */}
+      
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<MainRouteWrapper element={<Home />} />} />
         <Route path="/about" element={<MainRouteWrapper element={<About />} />} />
@@ -71,7 +80,7 @@ function App() {
         <Route path="/contact" element={<MainRouteWrapper element={<Contact />} />} />
         <Route path="/login" element={<MainRouteWrapper element={<Login />} />} />
         
-        {/* Protected Dashboard Routes */}
+      
         <Route
           path="/student-dashboard"
           element={<ProtectedRoute element={<Studentdashboard />} allowedRoles={['student']} />}

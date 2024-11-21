@@ -18,14 +18,12 @@ const LoginForm = ({ onToggle, onLogin }) => {
       const response = await axios.post('http://localhost:5000/api/users/login', userData);
       const { token, user } = response.data;
 
-      // Save the token and user details in localStorage
+     
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
 
-      // Pass user data to parent component
       onLogin(user);
 
-      // Redirect user based on their role
       if (user.role === 'student') {
         navigate('/student-dashboard');
       } else {
