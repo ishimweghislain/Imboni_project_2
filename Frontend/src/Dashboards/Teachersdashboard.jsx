@@ -1,19 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
-import {
-  FaBook,
-  FaChalkboardTeacher,
-  FaShareAlt,
-  FaFileAlt,
-  FaArrowLeft,
-} from 'react-icons/fa';
-
+import { FaBook, FaLaptopCode, FaSearch, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 
 import Teacher_notification from '../Communication/Teacher_notification';
 import Teacher_chat from '../Communication/Teacher_chat';
 import Teacher_people from '../Communication/Student_people';
-
 
 import Myclasses_view from '../Models/Myclasses_view';
 import Passedassignments_view from '../Models/Passedassignments_view';
@@ -26,16 +18,20 @@ import { PassedassignmentsPData } from '../Progress/PassedAssignmentsP';
 import { SharecoursesPData } from '../Progress/SharecoursesP';
 import { NewassignmentPData } from '../Progress/NewassignmentP';
 
-const Teachersdashboard = () => {
+const Teachersdashboard = ({ activeToggle }) => {
+  // Set the default state to 'notifications' so that it's visible when the page starts
   const [activeCategory, setActiveCategory] = useState(null);
   const [showOnlyBox, setShowOnlyBox] = useState(false);
   const barChartRef = useRef(null);
 
+  // Set notifications as the default active toggle if no toggle is provided
+  const effectiveActiveToggle = activeToggle || 'notifications';
+
   const chartData = {
     classes: MyclassesPData,
-    passedAssignments: PassedassignmentsPData,
-    shareCourses: SharecoursesPData,
-    newAssignment: NewassignmentPData,
+    passedassignments: PassedassignmentsPData,
+    sharecourses: SharecoursesPData,
+    newassignment: NewassignmentPData,
   };
 
   const handleCategoryClick = (category) => {
@@ -48,7 +44,7 @@ const Teachersdashboard = () => {
 
   const handleViewClick = (category) => {
     setActiveCategory(category);
-    setShowOnlyBox(true); // Show only the clicked box
+    setShowOnlyBox(true);
   };
 
   const handleBackToAll = () => {
@@ -61,14 +57,26 @@ const Teachersdashboard = () => {
     setTimeout(() => setAnimate(true), 100);
   }, []);
 
+  const renderLeftSidebar = () => {
+    switch (effectiveActiveToggle) {
+      case 'notifications':
+        return <Teacher_notification />;
+      case 'chat':
+        return <Teacher_chat />;
+      case 'people':
+        return <Teacher_people />;
+      default:
+        return <Teacher_notification />; 
+    }
+  };
+
   return (
     <div className="flex bg-gray-800 min-h-screen text-white">
-      {/* Left Dashboard: Notifications */}
+
       <div className="w-1/3 space-y-4 mr-4">
-        <Teacher_notification />
+        {renderLeftSidebar()}
       </div>
 
-      {/* Right Dashboard */}
       <div className="w-2/3 space-y-6">
         {showOnlyBox ? (
           <div className="flex flex-col items-center space-y-4">
@@ -81,101 +89,45 @@ const Teachersdashboard = () => {
                 Back to All
               </button>
               <h2 className="text-xl font-bold text-white">
-                {activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
+                {activeCategory?.charAt(0).toUpperCase() + activeCategory?.slice(1)}
               </h2>
             </div>
             {activeCategory === 'classes' && <Myclasses_view />}
-            {activeCategory === 'passedAssignments' && <Passedassignments_view />}
-            {activeCategory === 'shareCourses' && <Sharecourses_view />}
-            {activeCategory === 'newAssignment' && <Newassignment />}
+            {activeCategory === 'passedassignments' && <Passedassignments_view />}
+            {activeCategory === 'sharecourses' && <Sharecourses_view />}
+            {activeCategory === 'newassignment' && <Newassignment />}
           </div>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4">
-              {/* Dashboard Items */}
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'classes' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform -translate-x-full'}`}
-                onClick={() => handleCategoryClick('classes')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaChalkboardTeacher className="text-3xl" />
-                </div>
-                <h3 className="font-semibold text-lg">My Classes</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('classes');
-                  }}
+              {Object.keys(chartData).map((key) => (
+                <div
+                  key={key}
+                  className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
+                    activeCategory === key ? 'bg-[#ff7961]' : 'bg-[#f44336]'
+                  }`}
+                  onClick={() => handleCategoryClick(key)}
                 >
-                  View All
-                </button>
-              </div>
-
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'passedAssignments' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform translate-x-full'}`}
-                onClick={() => handleCategoryClick('passedAssignments')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaBook className="text-3xl" />
+                  <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
+                    {key === 'classes' && <FaBook className="text-3xl" />}
+                    {key === 'passedassignments' && <FaLaptopCode className="text-3xl" />}
+                    {key === 'sharecourses' && <FaSearch className="text-3xl" />}
+                    {key === 'newassignment' && <FaCheckCircle className="text-3xl" />}
+                  </div>
+                  <h3 className="font-semibold text-lg">
+                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+                  </h3>
+                  <button
+                    className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewClick(key);
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
-                <h3 className="font-semibold text-lg">Passed Assignments</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('passedAssignments');
-                  }}
-                >
-                  View All
-                </button>
-              </div>
-
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'shareCourses' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform -translate-x-full'}`}
-                onClick={() => handleCategoryClick('shareCourses')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaShareAlt className="text-3xl" />
-                </div>
-                <h3 className="font-semibold text-lg">Share Courses</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('shareCourses');
-                  }}
-                >
-                  View All
-                </button>
-              </div>
-
-              <div
-                className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                  activeCategory === 'newAssignment' ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                } ${animate ? 'transform translate-x-0' : 'transform translate-x-full'}`}
-                onClick={() => handleCategoryClick('newAssignment')}
-              >
-                <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
-                  <FaFileAlt className="text-3xl" />
-                </div>
-                <h3 className="font-semibold text-lg">New Assignment</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewClick('newAssignment');
-                  }}
-                >
-                  +
-                </button>
-              </div>
+              ))}
             </div>
 
             {activeCategory && chartData[activeCategory] && (
