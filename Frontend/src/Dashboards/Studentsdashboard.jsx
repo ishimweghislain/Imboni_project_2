@@ -71,8 +71,8 @@ const Studentsdashboard = ({ activeToggle }) => {
   };
 
   return (
-    <div className="flex bg-gray-800 min-h-screen text-white">
-      {/* Left Dashboard */}
+    <div className="flex bg-gray-800 min-h-screen text-white h-[">
+    
       <div
         className={`w-1/3 space-y-4 mr-4 transform transition-transform duration-2000 ${
           animateLeft ? 'translate-x-0' : '-translate-x-full'
@@ -141,7 +141,7 @@ const Studentsdashboard = ({ activeToggle }) => {
 
             {/* Chart */}
             {activeCategory && chartData[activeCategory] && (
-              <div ref={barChartRef} className="mt-6">
+              <div ref={barChartRef} className="mt-6 ">
                 <h3 className="text-center text-xl font-semibold">
                   {activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Statistics
                 </h3>
