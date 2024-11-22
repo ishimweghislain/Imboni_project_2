@@ -18,12 +18,12 @@ import { MyresearchesPData } from '../Progress/MyresearchesP';
 import { ViewmarksPData } from '../Progress/ViewmarksP';
 
 const Studentsdashboard = ({ activeToggle }) => {
-  // Set the default state to 'notifications' so that it's visible when the page starts
   const [activeCategory, setActiveCategory] = useState(null);
   const [showOnlyBox, setShowOnlyBox] = useState(false);
+  const [animateLeft, setAnimateLeft] = useState(false);
+  const [animateBoxes, setAnimateBoxes] = useState(false);
   const barChartRef = useRef(null);
 
-  // Set notifications as the default active toggle if no toggle is provided
   const effectiveActiveToggle = activeToggle || 'notifications';
 
   const chartData = {
@@ -32,6 +32,12 @@ const Studentsdashboard = ({ activeToggle }) => {
     researches: MyresearchesPData,
     marks: ViewmarksPData,
   };
+
+  useEffect(() => {
+    // Trigger animations after component mounts
+    setTimeout(() => setAnimateLeft(true), 100);
+    setTimeout(() => setAnimateBoxes(true), 500);
+  }, []);
 
   const handleCategoryClick = (category) => {
     setActiveCategory(category);
@@ -51,11 +57,6 @@ const Studentsdashboard = ({ activeToggle }) => {
     setShowOnlyBox(false);
   };
 
-  const [animate, setAnimate] = useState(false);
-  useEffect(() => {
-    setTimeout(() => setAnimate(true), 100);
-  }, []);
-
   const renderLeftSidebar = () => {
     switch (effectiveActiveToggle) {
       case 'notifications':
@@ -65,17 +66,22 @@ const Studentsdashboard = ({ activeToggle }) => {
       case 'people':
         return <Student_people />;
       default:
-        return <Student_notification />; 
+        return <Student_notification />;
     }
   };
 
   return (
     <div className="flex bg-gray-800 min-h-screen text-white">
-
-      <div className="w-1/3 space-y-4 mr-4">
+      {/* Left Dashboard */}
+      <div
+        className={`w-1/3 space-y-4 mr-4 transform transition-transform duration-2000 ${
+          animateLeft ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         {renderLeftSidebar()}
       </div>
 
+      {/* Right Dashboard */}
       <div className="w-2/3 space-y-6">
         {showOnlyBox ? (
           <div className="flex flex-col items-center space-y-4">
@@ -98,13 +104,17 @@ const Studentsdashboard = ({ activeToggle }) => {
           </div>
         ) : (
           <>
+            {/* Boxes */}
             <div className="grid grid-cols-2 gap-4">
-              {Object.keys(chartData).map((key) => (
+              {Object.keys(chartData).map((key, index) => (
                 <div
                   key={key}
-                  className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-transform duration-500 ${
-                    activeCategory === key ? 'bg-[#ff7961]' : 'bg-[#f44336]'
-                  }`}
+                  className={`flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transform transition-transform duration-1000 ${
+                    animateBoxes ? `translate-x-0 delay-${index * 200}` : 'translate-x-full'
+                  } ${activeCategory === key ? 'bg-[#ff7961]' : 'bg-[#f44336]'}`}
+                  style={{
+                    transitionDelay: `${index * 200}ms`,
+                  }}
                   onClick={() => handleCategoryClick(key)}
                 >
                   <div className="bg-gray-800 text-white p-4 rounded-full mb-4">
@@ -129,6 +139,7 @@ const Studentsdashboard = ({ activeToggle }) => {
               ))}
             </div>
 
+            {/* Chart */}
             {activeCategory && chartData[activeCategory] && (
               <div ref={barChartRef} className="mt-6">
                 <h3 className="text-center text-xl font-semibold">
