@@ -18,33 +18,77 @@ const PassedAssignmentsView = () => {
     fetchAssignments();
   }, []);
 
+  // Inline CSS styles
+  const tableStyle = {
+    minWidth: '820px',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    animation: 'animate-border 1s linear infinite', // Animation applied here
+  };
+
+  const rowHoverStyle = {
+    backgroundColor: '#f9fafb',
+  };
+
+  const cellStyle = {
+    padding: '16px',
+    borderBottom: '1px solid #e0e0e0',
+    fontSize: '14px',
+    color: '#4a4a4a',
+  };
+
+  const errorStyle = {
+    color: 'red',
+    fontSize: '14px',
+  };
+
+  const animateBorderKeyframes = `
+    @keyframes animate-border {
+      0% {
+        border-color: transparent;
+      }
+      50% {
+        border-color: #f44336; /* You can change this color */
+      }
+      100% {
+        border-color: transparent;
+      }
+    }
+  `;
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Passed Assignments</h2>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p style={errorStyle}>{error}</p>}
+      <style>{animateBorderKeyframes}</style> {/* Adding the keyframes to the page */}
+
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
+        <table style={tableStyle} className="bg-white shadow-lg rounded-lg">
+          <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-2 border-b">Course Name</th>
-              <th className="px-4 py-2 border-b">Deadline</th>
-              <th className="px-4 py-2 border-b">Students</th>
-              <th className="px-4 py-2 border-b">Details</th>
+              <th style={cellStyle} className="text-left text-sm font-medium text-black">Course Name</th>
+              <th style={cellStyle} className="text-left text-sm font-medium text-black">Deadline</th>
+              <th style={cellStyle} className="text-left text-sm font-medium text-black">Students</th>
+              <th style={cellStyle} className="text-left text-sm font-medium text-black">Details</th>
             </tr>
           </thead>
           <tbody>
             {assignments.length === 0 ? (
               <tr>
-                <td colSpan="4" className="text-center py-4">No assignments found</td>
+                <td colSpan="4" className="text-center py-4 text-gray-600">No assignments found</td>
               </tr>
             ) : (
               assignments.map((assignment) => (
-                <tr key={assignment._id}>
-                  <td className="px-4 py-2 border-b">{assignment.courseName}</td>
-                  <td className="px-4 py-2 border-b">{assignment.deadline}</td>
-                  <td className="px-4 py-2 border-b">{assignment.numStudents}</td>
-                  <td className="px-4 py-2 border-b">
-                    <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                <tr
+                  key={assignment._id}
+                  style={rowHoverStyle} // Apply hover effect on rows
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td style={cellStyle}>{assignment.courseName}</td>
+                  <td style={cellStyle}>{assignment.deadline}</td>
+                  <td style={cellStyle}>{assignment.numStudents}</td>
+                  <td style={cellStyle}>
+                    <button className="bg-gray-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors">
                       View Details
                     </button>
                   </td>
