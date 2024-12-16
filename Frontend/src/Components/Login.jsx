@@ -124,7 +124,7 @@ const CreateAccountForm = ({ onToggle }) => {
     } catch (error) {
       setLoading(false);
       console.error(error.response.data);
-      alert('Error registering user');
+      alert('Error registering user there might be some wrong credentials !!');
     }
   };
 
@@ -133,7 +133,7 @@ const CreateAccountForm = ({ onToggle }) => {
       {loading ? (
         <div className="flex items-center justify-center h-full">
           <div className="loader border-t-4 border-b-4 border-[#f44336] rounded-full w-12 h-12 animate-spin"></div>
-          <p className="text-[#f44336] font-bold ml-4">😊 Your Account is being created !...</p>
+          {/* <p className="text-[#f44336] font-bold ml-4">😊 Your Account is being created !...</p> */}
         </div>
       ) : (
         <div className="form-container flex w-[800px] max-w-4xl rounded-lg shadow-md">

@@ -39,7 +39,7 @@ const Navbar = ({ isHome }) => {
         <div className='icon'>
         <FaBookOpen className="text-[#f44336] text-2xl text-[50px] " />
         </div>
-        <span className="text-xl font-bold text-white">ImBoni</span>
+        <span className="text-xl font-bold text-white">InTambi</span>
       </div>
       <div className="md:flex space-x-6 font-medium">
         {['Home', 'About', 'Pricing', 'Professors', 'Goals', 'Blogs', 'Contact',].map((link) => (

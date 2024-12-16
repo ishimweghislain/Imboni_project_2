@@ -2,7 +2,7 @@ import React from 'react';
 
 const Teacher_notification = () => {
   return (
-    <div className="bg-white p-4 rounded-lg text-gray-800 h-[590px]">
+    <div className="bg-white p-4 rounded-lg text-gray-800 h-[540px]">
       <h2 className="text-xl font-semibold mb-4 text-[#f44336]">Notifications</h2>
       <div className="space-y-4 overflow-y-scroll h-[480px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <style>

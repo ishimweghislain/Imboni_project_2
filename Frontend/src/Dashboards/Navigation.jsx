@@ -16,7 +16,7 @@ const Navigation = ({ onToggle }) => {
   const handleLogoutConfirmation = () => {
     // Simulate the logout process
     localStorage.removeItem('user');
-    navigate('/login'); // Navigate to login after 3 seconds
+    navigate('/login'); // Navigate to login after 8 seconds
   };
 
   const handleToggle = (type) => {
@@ -38,7 +38,7 @@ const Navigation = ({ onToggle }) => {
               to={user?.role === 'student' ? '/student-dashboard' : '/teacher-dashboard'}
               className="font-bold text-xl"
             >
-              ImBoni
+              InTambi
             </Link>
           </div>
 

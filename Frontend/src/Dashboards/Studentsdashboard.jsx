@@ -35,8 +35,8 @@ const Studentsdashboard = ({ activeToggle }) => {
 
   useEffect(() => {
     // Trigger animations after component mounts
-    setTimeout(() => setAnimateLeft(true), 100);
-    setTimeout(() => setAnimateBoxes(true), 500);
+    setTimeout(() => setAnimateLeft(true), 200);
+    setTimeout(() => setAnimateBoxes(true), 50);
   }, []);
 
   const handleCategoryClick = (category) => {

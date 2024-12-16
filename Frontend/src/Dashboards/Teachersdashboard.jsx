@@ -12,19 +12,21 @@ import Passedassignments_view from '../Models/Passedassignments_view';
 import Sharecourses_view from '../Models/Sharecourses_view';
 import Newassignment from '../Models/Newassignment';
 
-
 import { MyclassesPData } from '../Progress/MyclassesP';
 import { PassedassignmentsPData } from '../Progress/PassedAssignmentsP';
 import { SharecoursesPData } from '../Progress/SharecoursesP';
 import { NewassignmentPData } from '../Progress/NewassignmentP';
+
+import NewAssignmentForm from '../Work_models/New_assignment'; // Import the modal component
 
 const Teachersdashboard = ({ activeToggle }) => {
   const [activeCategory, setActiveCategory] = useState(null);
   const [showOnlyBox, setShowOnlyBox] = useState(false);
   const [animateLeft, setAnimateLeft] = useState(false);
   const [animateBoxes, setAnimateBoxes] = useState(false);
-  const barChartRef = useRef(null);
+  const [showModal, setShowModal] = useState(false); // For the modal
 
+  const barChartRef = useRef(null);
   const effectiveActiveToggle = activeToggle || 'notifications';
 
   const chartData = {
@@ -126,15 +128,30 @@ const Teachersdashboard = ({ activeToggle }) => {
                   <h3 className="font-semibold text-lg">
                     {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
                   </h3>
-                  <button
-                    className="mt-4 px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewClick(key);
-                    }}
-                  >
-                    View All
-                  </button>
+                  <div className="mt-4 space-x-2">
+                    {key !== 'newassignment' && (
+                      <button
+                        className="px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewClick(key);
+                        }}
+                      >
+                        View All
+                      </button>
+                    )}
+                    {key === 'newassignment' && (
+                      <button
+                        className="px-4 py-2 bg-gray-200 text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowModal(true);
+                        }}
+                      >
+                        + New
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -151,6 +168,21 @@ const Teachersdashboard = ({ activeToggle }) => {
           </>
         )}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-lg w-1/2 max-h-[80vh] overflow-y-auto relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 text-xl hover:text-gray-800"
+              onClick={() => setShowModal(false)}
+            >
+              ❌
+            </button>
+            <NewAssignmentForm />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
