@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Formdetails from '../Classes_info_notes/Formdetails'; // Import Formdetails component
 
 const Myclasses_view = () => {
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);  // State to control modal visibility
+  const [selectedClass, setSelectedClass] = useState(null);  // Store selected class data
 
   useEffect(() => {
-
     const fetchClasses = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/classes');
@@ -19,6 +21,21 @@ const Myclasses_view = () => {
     fetchClasses();
   }, []);
 
+  const openModal = async (classItem) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/classes/${classItem.level}`);
+      setSelectedClass(response.data);
+      setModalOpen(true);  // Open the modal when a class is selected
+    } catch (err) {
+      setError('Failed to fetch class details.');
+    }
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);  // Close the modal
+    setSelectedClass(null); // Reset selected class
+  };
+
   const containerStyle = {
     width: '800px',
     backgroundColor: 'white',
@@ -28,7 +45,8 @@ const Myclasses_view = () => {
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     margin: '2rem auto',
   };
- const tableStyle = {
+
+  const tableStyle = {
     width: '100%',
     borderCollapse: 'collapse',
     borderWidth: '2px',
@@ -101,9 +119,7 @@ const Myclasses_view = () => {
                 <td style={cellStyle}>
                   <button
                     style={buttonStyle}
-                    onMouseEnter={(e) => (e.target.style.backgroundColor = '#1f2937')}
-                    onMouseLeave={(e) => (e.target.style.backgroundColor = '#f44336')}
-                    onClick={() => alert(`Viewing details for ${classItem.level}`)}
+                    onClick={() => openModal(classItem)}  // Trigger modal with class details
                   >
                     View
                   </button>
@@ -113,6 +129,47 @@ const Myclasses_view = () => {
           )}
         </tbody>
       </table>
+
+      {/* Modal for displaying class details */}
+      {modalOpen && selectedClass && (
+        <div style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '800px',
+            width: '100%',
+            position: 'relative',
+          }}>
+            <button
+              onClick={closeModal}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#f44336',
+              }}
+            >
+              ❌
+            </button>
+            <Formdetails classDetails={selectedClass} /> {/* Pass class details to Formdetails */}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

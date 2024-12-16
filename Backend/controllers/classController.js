@@ -46,4 +46,23 @@ const getStudentCount = async (req, res) => {
   }
 };
 
-module.exports = { getClasses, getStudentCount };
+// Fetch class details (including students) based on level
+const getClassDetails = async (req, res) => {
+  try {
+    const { level } = req.params;
+
+    // Fetch class details including students based on level
+    const classDetails = await Class.findOne({ level }).lean();
+
+    if (!classDetails) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    res.status(200).json(classDetails);
+  } catch (error) {
+    console.error('Error fetching class details:', error);
+    res.status(500).json({ message: 'Error fetching class details' });
+  }
+};
+
+module.exports = { getClasses, getStudentCount, getClassDetails };

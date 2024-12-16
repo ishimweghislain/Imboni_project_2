@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const Assignment = require('../models/assignment');
 const router = express.Router();
 
@@ -18,11 +17,21 @@ const upload = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB file size limit
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+    const allowedTypes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/gif', 
+      'application/pdf', 
+      'text/plain',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  // .docx
+      'application/vnd.ms-excel',  // .xls
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  // .xlsx
+    ];
+    
     if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
+      cb(null, true);  // Accept the file
     } else {
-      cb(new Error('Invalid file type'));
+      cb(new Error('Invalid file type'), false);  // Reject the file
     }
   }
 });
