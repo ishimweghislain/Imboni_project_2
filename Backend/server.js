@@ -39,6 +39,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/users', authRoutes);
 app.use('/api', classRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

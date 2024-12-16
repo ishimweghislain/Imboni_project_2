@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const Assignment = require('../models/assignment'); // Import the Assignment model
+const path = require('path');
+const Assignment = require('../models/assignment');
 const router = express.Router();
 
 // Multer configuration for file upload
@@ -13,7 +14,18 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB file size limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
 
 // Handle new assignment submission and save it to the database
 router.post('/', upload.single('file'), async (req, res) => {
@@ -37,8 +49,8 @@ router.post('/', upload.single('file'), async (req, res) => {
       teacherName,
       courseName,
       selectedClasses: selectedClassesArray,
-      numStudents,
-      deadline,
+      numStudents: parseInt(numStudents),
+      deadline: new Date(deadline),
       assignmentText,
       file: file ? file : null,  // Save the file path or null if no file was uploaded
     });
@@ -60,8 +72,8 @@ router.post('/', upload.single('file'), async (req, res) => {
 // Add route to fetch all assignments
 router.get('/', async (req, res) => {
   try {
-    // Fetch all assignments from the database
-    const assignments = await Assignment.find();
+    // Fetch all assignments from the database with selected fields
+    const assignments = await Assignment.find({}, 'courseName deadline numStudents file assignmentText');
     
     if (assignments.length === 0) {
       return res.status(404).json({ message: 'No assignments found' });

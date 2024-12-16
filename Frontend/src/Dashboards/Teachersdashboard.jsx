@@ -8,7 +8,7 @@ import Teacher_chat from '../Communication/Teacher_chat';
 import Teacher_people from '../Communication/Student_people';
 
 import Myclasses_view from '../Models/Myclasses_view';
-import Passedassignments_view from '../Models/Passedassignments_view';
+import Passedassignments_view from '../Models/PassedAssignments_view';
 import Sharecourses_view from '../Models/Sharecourses_view';
 import Newassignment from '../Models/Newassignment';
 
@@ -17,7 +17,7 @@ import { PassedassignmentsPData } from '../Progress/PassedAssignmentsP';
 import { SharecoursesPData } from '../Progress/SharecoursesP';
 import { NewassignmentPData } from '../Progress/NewassignmentP';
 
-import NewAssignmentForm from '../Work_models/New_assignment'; // Import the modal component
+import NewAssignmentForm from '../Work_models/New_assignment'; 
 
 const Teachersdashboard = ({ activeToggle }) => {
   const [activeCategory, setActiveCategory] = useState(null);
