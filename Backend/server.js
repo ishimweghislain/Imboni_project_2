@@ -15,31 +15,37 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+
+// Serve static files in the /uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// CORS configuration
 app.use(cors({
   origin: 'http://localhost:5173', // URL of your React app
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
-// Static file handling for uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB Connected Successfully'))
-.catch(err => {
-  console.error('MongoDB Connection Error:', err);
-  process.exit(1);
-});
+  .then(() => console.log('MongoDB Connected Successfully'))
+  .catch(err => {
+    console.error('MongoDB Connection Error:', err);
+    process.exit(1);
+  });
 
 // API Routes
 app.use('/api/users', authRoutes);
 app.use('/api', classRoutes);
 app.use('/api/assignments', assignmentRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Static file error handling
+app.use('/uploads', (req, res, next) => {
+  res.status(404).send('File not found');
+});
 
 // Global Error Handler
 app.use((err, req, res, next) => {
