@@ -67,16 +67,6 @@ const Myclasses_view = () => {
     backgroundColor: '#f9fafb',
   };
 
-  const buttonStyle = {
-    backgroundColor: '#f44336',
-    color: 'white',
-    border: 'none',
-    padding: '6px 12px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s',
-  };
-
   return (
     <div style={containerStyle}>
       <h2 style={{ color: '#f44336', textAlign: 'center', marginBottom: '1rem' }}>
@@ -117,12 +107,7 @@ const Myclasses_view = () => {
                 <td style={cellStyle}>{classItem.acronym || 'N/A'}</td>
                 <td style={cellStyle}>{classItem.totalstudents}</td>
                 <td style={cellStyle}>
-                  <button
-                    style={buttonStyle}
-                    onClick={() => openModal(classItem)}  // Trigger modal with class details
-                  >
-                    View
-                  </button>
+                  <HoverButton classItem={classItem} openModal={openModal} />
                 </td>
               </tr>
             ))
@@ -171,6 +156,31 @@ const Myclasses_view = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const HoverButton = ({ classItem, openModal }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const buttonStyle = {
+    backgroundColor: isHovered ? '#4a5568' : '#f44336', // Change color on hover
+    color: 'white',
+    border: 'none',
+    padding: '6px 12px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
+  };
+
+  return (
+    <button
+      style={buttonStyle}
+      onClick={() => openModal(classItem)}
+      onMouseEnter={() => setIsHovered(true)} // Set hover state
+      onMouseLeave={() => setIsHovered(false)} // Reset hover state
+    >
+      View
+    </button>
   );
 };
 

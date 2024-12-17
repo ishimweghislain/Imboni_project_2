@@ -1,19 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { FaTimes, FaFilePdf, FaFileImage, FaFileWord, FaFileExcel } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaTimes, FaFilePdf, FaFileImage } from 'react-icons/fa';
 
 const Teacherviewdetails = ({ assignment, onClose }) => {
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
   const [fileError, setFileError] = useState(null);
 
+  // Mock student submissions
   const [studentSubmissions] = useState([
     {
       name: 'ISHIMWE GHISLAIN',
       submissionTime: '2024-01-15 14:30',
       fileUrl: assignment.file ? `/uploads/${assignment.file}` : null,
     },
+    {
+      name: 'JOHN DOE',
+      submissionTime: '2024-01-16 10:15',
+      fileUrl: assignment.file ? `/uploads/${assignment.file}` : null,
+    },
+    {
+      name: 'JANE SMITH',
+      submissionTime: '2024-01-17 09:45',
+      fileUrl: null,
+    },
   ]);
 
-  // Styles
   const modalStyle = {
     position: 'fixed',
     top: 0,
@@ -47,48 +57,35 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
     fontSize: '1.5rem',
   };
 
-  // File type icon mapping
   const getFileIcon = (fileName) => {
     const ext = fileName.split('.').pop().toLowerCase();
     const iconProps = { size: 50, className: 'mr-3' };
-    
+
     const iconMap = {
       'pdf': <FaFilePdf color="#FF0000" {...iconProps} />,
       'jpg': <FaFileImage color="#4CAF50" {...iconProps} />,
       'jpeg': <FaFileImage color="#4CAF50" {...iconProps} />,
       'png': <FaFileImage color="#4CAF50" {...iconProps} />,
-      'docx': <FaFileWord color="#2196F3" {...iconProps} />,
-      'doc': <FaFileWord color="#2196F3" {...iconProps} />,
-      'xlsx': <FaFileExcel color="#4CAF50" {...iconProps} />,
-      'xls': <FaFileExcel color="#4CAF50" {...iconProps} />,
     };
 
     return iconMap[ext] || null;
   };
 
-  // File preview handler
   const handleFilePreview = (file) => {
     const fileUrl = `http://localhost:5000/uploads/${file}`;
     const fileExtension = file.split('.').pop().toLowerCase();
-    
-    // Reset previous errors
+
     setFileError(null);
 
-    // Determine preview method based on file type
-    const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif'];
-    const googlePreviewTypes = ['docx', 'xlsx', 'xls', 'doc'];
+    const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png'];
 
     if (previewableTypes.includes(fileExtension)) {
       setFilePreviewUrl(fileUrl);
-    } else if (googlePreviewTypes.includes(fileExtension)) {
-      // Google Docs viewer for Office files
-      setFilePreviewUrl(`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`);
     } else {
       setFileError('File type not supported for preview');
     }
   };
 
-  // Download file handler
   const downloadFile = (file) => {
     const fileUrl = `http://localhost:5000/uploads/${file}`;
     const link = document.createElement('a');
@@ -102,13 +99,10 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
   return (
     <div style={modalStyle}>
       <div style={modalContentStyle}>
-        {/* Close Icon */}
         <FaTimes style={closeIconStyle} onClick={onClose} />
 
-        {/* Assignment Details */}
         <h2 style={{ color: '#f44336', marginBottom: '20px' }}>Assignment Details</h2>
 
-        {/* Assignment Content */}
         <div style={{ marginBottom: '20px' }}>
           <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Assignment Content</h3>
           {assignment.file ? (
@@ -117,13 +111,13 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
               <div>
                 <p>{assignment.file}</p>
                 <div className="flex space-x-2 mt-2">
-                  <button 
+                  <button
                     onClick={() => handleFilePreview(assignment.file)}
                     className="bg-blue-500 text-white px-3 py-1 rounded"
                   >
                     Preview
                   </button>
-                  <button 
+                  <button
                     onClick={() => downloadFile(assignment.file)}
                     className="bg-green-500 text-white px-3 py-1 rounded"
                   >
@@ -136,36 +130,47 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
             <p>{assignment.assignmentText || 'No content provided'}</p>
           )}
 
-          {/* File Preview Area */}
           {filePreviewUrl && (
-            <div className="mt-4" style={{ height: '500px', width: '100%' }}>
-              {/* If it's an image file, make sure it covers the space properly */}
-              {filePreviewUrl.endsWith('.jpg') || filePreviewUrl.endsWith('.jpeg') || filePreviewUrl.endsWith('.png') || filePreviewUrl.endsWith('.gif') ? (
-                <img 
-                  src={filePreviewUrl} 
-                  alt="Assignment Preview" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <iframe 
+            <div
+              className="mt-4"
+              style={{
+                height: '500px',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                overflow: 'hidden',
+                backgroundColor: '#f9f9f9',
+              }}
+            >
+              {filePreviewUrl.endsWith('.pdf') ? (
+                <iframe
                   src={filePreviewUrl}
-                  width="100%" 
-                  height="100%" 
+                  width="100%"
+                  height="100%"
                   style={{ border: 'none' }}
                   title="File Preview"
+                />
+              ) : (
+                <img
+                  src={filePreviewUrl}
+                  alt="Preview"
+                  style={{
+                    maxHeight: '100%',
+                    maxWidth: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                  }}
                 />
               )}
             </div>
           )}
 
           {fileError && (
-            <div className="text-red-500 mt-2">
-              {fileError}
-            </div>
+            <div className="text-red-500 mt-2">{fileError}</div>
           )}
         </div>
 
-        {/* Student Submissions */}
         <div>
           <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Student Submissions</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -182,20 +187,24 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
                   <td style={{ border: '1px solid #ddd', padding: '8px' }}>{submission.name}</td>
                   <td style={{ border: '1px solid #ddd', padding: '8px' }}>{submission.submissionTime}</td>
                   <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
-                    <button
-                      style={{
-                        backgroundColor: '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                      }}
-                      onClick={() => alert('Viewing Submission')}
-                    >
-                      View
-                    </button>
+                    {submission.fileUrl ? (
+                      <button
+                        style={{
+                          backgroundColor: '#f44336',
+                          color: 'white',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                        }}
+                        onClick={() => handleFilePreview(assignment.file)}
+                      >
+                        View Submission
+                      </button>
+                    ) : (
+                      <span style={{ color: 'gray' }}>No File Submitted</span>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -12,7 +12,7 @@ const New_assignment = () => {
   const [assignmentText, setAssignmentText] = useState('');
   const [errors, setErrors] = useState({});
   
-  const [classOptions, setClassOptions] = useState([]); // Store classes from backend
+  const [classOptions, setClassOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,19 +20,10 @@ const New_assignment = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        console.log('Fetching classes from backend...');
         const response = await axios.get('http://localhost:5000/api/classes');
-        console.log('Classes fetched:', response.data);
-
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setClassOptions(response.data);
-          setIsLoading(false);
-        } else {
-          setError('No classes found');
-          setIsLoading(false);
-        }
+        setClassOptions(response.data);
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching classes:', error.response?.data || error.message);
         setError('Failed to fetch classes');
         setIsLoading(false);
       }
@@ -51,39 +42,45 @@ const New_assignment = () => {
     for (let i = 0; i < options.length; i++) {
       if (options[i].selected) selected.push(options[i].value);
     }
-    setSelectedClasses(selected); // Array of class levels
+    setSelectedClasses(selected);
   };
 
-  // Validate student count
+  // Validate form inputs
   const validateForm = async () => {
-    console.log('Validating form...');
-    console.log('Selected classes:', selectedClasses);
-    console.log('Entered number of students:', numStudents);
-
     const newErrors = {};
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
+    if (!teacherName.trim()) {
+      newErrors.teacherName = 'Teacher name is required.';
+    }
+    if (!courseName.trim()) {
+      newErrors.courseName = 'Course name is required.';
+    }
     if (selectedClasses.length === 0) {
-      console.error('No classes selected.');
       newErrors.selectedClasses = 'Please select at least one class.';
-    } else {
-      try {
-        console.log('Sending student count validation request...');
-        const response = await axios.post(
-          'http://localhost:5000/api/classes/students-count',
-          { classes: selectedClasses }
-        );
-        console.log('Validation response:', response.data);
+    }
+    if (!numStudents.trim() || isNaN(numStudents) || parseInt(numStudents, 10) <= 0) {
+      newErrors.numStudents = 'Please enter a valid number of students.';
+    }
+    if (!deadline) {
+      newErrors.deadline = 'Deadline is required.';
+    } else if (deadline < today) {
+      newErrors.deadline = 'Deadline cannot be in the past.';
+    }
 
+    // Validate student count with backend
+    if (!newErrors.numStudents && selectedClasses.length > 0) {
+      try {
+        const response = await axios.post('http://localhost:5000/api/classes/students-count', {
+          classes: selectedClasses,
+        });
         const actualStudentCount = response.data.totalStudents;
         const enteredStudentCount = parseInt(numStudents, 10);
 
-        if (isNaN(enteredStudentCount)) {
-          newErrors.numStudents = 'Please enter a valid number for students.';
-        } else if (enteredStudentCount !== actualStudentCount) {
+        if (enteredStudentCount !== actualStudentCount) {
           newErrors.numStudents = `Number of students mismatch! Expected: ${actualStudentCount}, Entered: ${enteredStudentCount}`;
         }
       } catch (error) {
-        console.error('Error validating student count:', error.response?.data || error.message);
         newErrors.numStudents = 'Unable to validate student count. Please try again.';
       }
     }
@@ -94,32 +91,30 @@ const New_assignment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const isValid = await validateForm();
-  
+
     if (isValid) {
       const formData = new FormData();
       formData.append('teacherName', teacherName);
       formData.append('courseName', courseName);
-      formData.append('selectedClasses', selectedClasses.join(',')); // Send as comma-separated
+      formData.append('selectedClasses', selectedClasses.join(','));
       formData.append('numStudents', numStudents);
       formData.append('deadline', deadline);
-  
+
       if (attachFile && file) {
-        formData.append('file', file); // Append file if uploaded
+        formData.append('file', file);
       } else {
-        formData.append('assignmentText', assignmentText); // Append text if no file
+        formData.append('assignmentText', assignmentText);
       }
-  
+
       try {
         const response = await axios.post('http://localhost:5000/api/assignments/', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
-        console.log('Response:', response.data);
         alert('Assignment submitted successfully!');
       } catch (error) {
-        console.error('Error:', error.response ? error.response.data : error.message);
-        alert(`Failed to submit assignment: ${error.response ? error.response.data.message : error.message}`);
+        alert(`Failed to submit assignment: ${error.response?.data?.message || error.message}`);
       }
     }
   };
@@ -169,10 +164,7 @@ const New_assignment = () => {
               <option disabled>{error}</option>
             ) : classOptions.length > 0 ? (
               classOptions.map((classOption) => (
-                <option 
-                  key={classOption._id} 
-                  value={classOption.level} // Ensure class level is the value
-                >
+                <option key={classOption._id} value={classOption.level}>
                   {classOption.level} - {classOption.program} ({classOption.acronym})
                 </option>
               ))
@@ -217,7 +209,7 @@ const New_assignment = () => {
               checked={attachFile}
               onChange={() => {
                 setAttachFile(!attachFile);
-                setFile(null); // Reset file when toggling
+                setFile(null);
               }}
             />
             <span className="text-gray-700">Yes</span>
@@ -250,11 +242,10 @@ const New_assignment = () => {
           </div>
         ) : (
           <div>
-            <label className="block text-gray-700 font-semibold">Write the Assignment Details</label>
+            <label className="block text-gray-700 font-semibold">Assignment Text</label>
             <textarea
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f44336] text-black"
-              rows="4"
-              placeholder="Write the assignment here..."
+              placeholder="Enter assignment text"
               value={assignmentText}
               onChange={(e) => setAssignmentText(e.target.value)}
             />
@@ -262,14 +253,12 @@ const New_assignment = () => {
           </div>
         )}
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-[#f44336] text-white py-2 px-6 rounded-lg hover:bg-gray-800"
-          >
-            Submit Assignment
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="bg-[#f44336] text-white px-4 py-2 rounded-lg hover:bg-gray-800"
+        >
+          Submit Assignment
+        </button>
       </form>
     </div>
   );
