@@ -2,8 +2,13 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const Assignment = require('../models/assignment');
 const router = express.Router();
+
+const { 
+  createAssignment, 
+  getAssignments,
+  getAssignmentStudents 
+} = require('../controllers/assignmentController');
 
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -27,66 +32,24 @@ const upload = multer({
       'image/jpeg',
       'image/png',
       'image/gif',
+      'application/pdf'
     ];
-
+    
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only images are allowed'), false);
+      cb(new Error('Only images and PDFs are allowed'), false);
     }
   },
 });
 
-router.post('/', upload.single('file'), async (req, res) => {
-  try {
-    const {
-      teacherName,
-      courseName,
-      selectedClasses,
-      numStudents,
-      deadline,
-      assignmentText,
-    } = req.body;
+// Route to create a new assignment
+router.post('/', upload.single('file'), createAssignment);
 
-    const file = req.file?.filename;
+// Route to get all assignments
+router.get('/', getAssignments);
 
-    const selectedClassesArray = selectedClasses.split(',').map(cls => cls.trim());
-
-    const newAssignment = new Assignment({
-      teacherName,
-      courseName,
-      selectedClasses: selectedClassesArray,
-      numStudents: parseInt(numStudents),
-      deadline: new Date(deadline),
-      assignmentText,
-      file: file || null,
-    });
-
-    const savedAssignment = await newAssignment.save();
-
-    res.status(201).json({
-      message: 'Assignment submitted successfully',
-      assignment: savedAssignment,
-    });
-  } catch (err) {
-    console.error('Error submitting assignment:', err);
-    res.status(500).json({ message: 'Failed to submit assignment' });
-  }
-});
-
-router.get('/', async (req, res) => {
-  try {
-    const assignments = await Assignment.find({}, 'courseName deadline numStudents file assignmentText');
-
-    if (assignments.length === 0) {
-      return res.status(404).json({ message: 'No assignments found' });
-    }
-
-    res.status(200).json(assignments);
-  } catch (err) {
-    console.error('Error fetching assignments:', err);
-    res.status(500).json({ message: 'Failed to fetch assignments' });
-  }
-});
+// Route to get students for a specific assignment
+router.get('/:assignmentId/students', getAssignmentStudents);
 
 module.exports = router;
