@@ -1,15 +1,22 @@
 const Class = require('../models/class');
 
-// Fetch all classes
+// Fetch all classes with total student count
 const getClasses = async (req, res) => {
   try {
-    // Fetch all classes with relevant fields and virtuals
-    const classes = await Class.find().select('level program acronym').lean({ virtuals: true });
+    // Fetch all classes with relevant fields
+    const classes = await Class.find().select('level program acronym students').lean();
+
     if (classes.length === 0) {
       return res.status(404).json({ message: 'No classes found' });
     }
-    
-    res.status(200).json(classes);
+
+    // Add totalstudents field for each class
+    const classesWithCounts = classes.map(classItem => ({
+      ...classItem,
+      totalstudents: classItem.students ? classItem.students.length : 0, // Calculate total students
+    }));
+
+    res.status(200).json(classesWithCounts);
   } catch (error) {
     console.error('Error fetching classes:', error);
     res.status(500).json({ message: 'Error fetching classes' });

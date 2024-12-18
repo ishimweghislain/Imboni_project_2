@@ -24,22 +24,31 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
   }, [assignment]);
 
   const handleFilePreview = (fileUrl) => {
-    const fileExtension = fileUrl?.split('.').pop().toLowerCase();
+    // Ensure the URL is a full URL or starts with the correct base path
+    const fullFileUrl = fileUrl.startsWith('http') 
+      ? fileUrl 
+      : `http://localhost:5000${fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`}`;
+
+    const fileExtension = fullFileUrl.split('.').pop().toLowerCase();
 
     setFileError(null);
 
     const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png'];
 
-    if (fileUrl && previewableTypes.includes(fileExtension)) {
-      setFilePreviewUrl(fileUrl);
+    if (fullFileUrl && previewableTypes.includes(fileExtension)) {
+      setFilePreviewUrl(fullFileUrl);
     } else {
       setFileError('File type not supported for preview');
     }
   };
 
   const downloadFile = (fileUrl) => {
+    const fullFileUrl = fileUrl.startsWith('http') 
+      ? fileUrl 
+      : `http://localhost:5000${fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`}`;
+
     const link = document.createElement('a');
-    link.href = fileUrl;
+    link.href = fullFileUrl;
     link.setAttribute('download', fileUrl.split('/').pop());
     document.body.appendChild(link);
     link.click();
