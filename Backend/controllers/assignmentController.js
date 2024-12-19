@@ -9,7 +9,6 @@ exports.createAssignment = async (req, res) => {
       teacherName,
       courseName,
       selectedClasses,
-      numStudents,
       deadline,
       assignmentText
     } = req.body;
@@ -25,7 +24,6 @@ exports.createAssignment = async (req, res) => {
       teacherName,
       courseName,
       selectedClasses: selectedClassesArray,
-      numStudents,
       deadline,
       assignmentText,
       file: filePath, // Store the file path
@@ -34,10 +32,17 @@ exports.createAssignment = async (req, res) => {
     // Save the assignment in the database
     const savedAssignment = await newAssignment.save();
 
+    // Fetch current student count
+    const classes = await Class.find({ level: { $in: selectedClassesArray } });
+    const currentStudentCount = classes.reduce((total, cls) => total + cls.students.length, 0);
+
     // Respond with success and the saved assignment
     res.status(201).json({
       message: 'Assignment created successfully',
-      assignment: savedAssignment,
+      assignment: {
+        ...savedAssignment.toObject(),
+        currentStudentCount
+      },
     });
   } catch (error) {
     console.error('Error creating assignment:', error);
@@ -45,6 +50,41 @@ exports.createAssignment = async (req, res) => {
       message: 'Failed to create assignment',
       error: error.message
     });
+  }
+};
+
+// Fetch all assignments with current student counts
+exports.getAssignments = async (req, res) => {
+  try {
+    const assignments = await Assignment.find({});
+
+    if (assignments.length === 0) {
+      return res.status(404).json({ message: 'No assignments found' });
+    }
+
+    // Get current student counts for each assignment
+    const assignmentsWithCurrentCounts = await Promise.all(
+      assignments.map(async (assignment) => {
+        const classes = await Class.find({ 
+          level: { $in: assignment.selectedClasses } 
+        });
+        
+        const currentStudentCount = classes.reduce(
+          (total, cls) => total + cls.students.length, 
+          0
+        );
+
+        return {
+          ...assignment.toObject(),
+          numStudents: currentStudentCount // Override the stored count with current count
+        };
+      })
+    );
+
+    res.status(200).json(assignmentsWithCurrentCounts);
+  } catch (err) {
+    console.error('Error fetching assignments:', err);
+    res.status(500).json({ message: 'Failed to fetch assignments' });
   }
 };
 
@@ -61,43 +101,31 @@ const getAssignmentStudents = async (req, res) => {
     }
 
     // Find students from the assigned classes
-    const students = await Class.find({ 
-      level: { $in: assignment.selectedClasses } 
-    }).select('students.name level');
+    const classes = await Class.find({
+      level: { $in: assignment.selectedClasses }
+    }).select('students.name level students.submissionStatus');
 
     // Flatten the students array and add class level
-    const formattedStudents = students.flatMap(classDoc => 
+    const formattedStudents = classes.flatMap(classDoc =>
       classDoc.students.map(student => ({
         name: student.name,
-        class: classDoc.level
+        class: classDoc.level,
+        submissionStatus: student.submissionStatus
       }))
     );
 
-    res.status(200).json(formattedStudents);
+    res.status(200).json({
+      students: formattedStudents,
+      totalCount: formattedStudents.length
+    });
   } catch (error) {
     console.error('Error fetching assignment students:', error);
     res.status(500).json({ message: 'Error fetching assignment students' });
   }
 };
 
-// Fetch all assignments
-exports.getAssignments = async (req, res) => {
-  try {
-    const assignments = await Assignment.find({}, 'courseName deadline numStudents file assignmentText');
-    
-    if (assignments.length === 0) {
-      return res.status(404).json({ message: 'No assignments found' });
-    }
-    
-    res.status(200).json(assignments);
-  } catch (err) {
-    console.error('Error fetching assignments:', err);
-    res.status(500).json({ message: 'Failed to fetch assignments' });
-  }
-};
-
-module.exports = { 
+module.exports = {
   createAssignment: exports.createAssignment,
   getAssignments: exports.getAssignments,
-  getAssignmentStudents 
+  getAssignmentStudents
 };

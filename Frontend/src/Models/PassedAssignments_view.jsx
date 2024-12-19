@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Teacherviewdetails from '../Models/Teacherviewdetails';
 
@@ -6,19 +6,37 @@ const PassedAssignmentsView = () => {
   const [assignments, setAssignments] = useState([]);
   const [error, setError] = useState(null);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  const fetchAssignments = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get('http://localhost:5000/api/assignments');
+      setAssignments(response.data);
+      setLastUpdate(new Date());
+      setError(null);
+    } catch (error) {
+      setError('Failed to fetch assignments. ' + (error.response?.data?.message || error.message));
+      console.error('Error fetching assignments:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/assignments');
-        setAssignments(response.data);
-      } catch (error) {
-        setError('Failed to fetch assignments.');
-      }
-    };
-
     fetchAssignments();
-  }, []);
+    
+    // Set up polling every 30 seconds
+    const pollInterval = setInterval(fetchAssignments, 30000);
+    
+    // Cleanup interval on component unmount
+    return () => clearInterval(pollInterval);
+  }, [fetchAssignments]);
+
+  const handleManualRefresh = () => {
+    fetchAssignments();
+  };
 
   const containerStyle = {
     width: '800px',
@@ -60,6 +78,20 @@ const PassedAssignmentsView = () => {
   const errorStyle = {
     color: 'red',
     fontSize: '14px',
+    padding: '8px',
+    marginBottom: '8px',
+    backgroundColor: '#fee2e2',
+    borderRadius: '4px',
+  };
+
+  const buttonStyle = {
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    padding: '8px 12px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
   };
 
   const animateBorderKeyframes = `
@@ -72,17 +104,43 @@ const PassedAssignmentsView = () => {
 
   return (
     <div style={containerStyle}>
-     <h2 style={{ color: '#f44336', textAlign: 'center', marginBottom: '1rem' }}>
-        Passed Assignments
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ color: '#f44336', margin: 0 }}>Passed Assignments</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {lastUpdate && (
+            <span style={{ fontSize: '12px', color: '#666' }}>
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={handleManualRefresh}
+            style={{
+              ...buttonStyle,
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer'
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+      </div>
       
-      {error && <p style={errorStyle}>{error}</p>}
+      {error && <div style={errorStyle}>{error}</div>}
 
       <style>{animateBorderKeyframes}</style>
       <style>
         {`
           .scrollable-container::-webkit-scrollbar {
             display: none;
+          }
+          
+          .hover-row:hover {
+            background-color: #f9fafb;
+          }
+          
+          .button-hover:hover {
+            background-color: #1f2937 !important;
           }
         `}
       </style>
@@ -101,34 +159,32 @@ const PassedAssignmentsView = () => {
             {assignments.length === 0 ? (
               <tr>
                 <td colSpan="4" style={{ textAlign: 'center', padding: '16px', color: '#4a4a4a' }}>
-                  No assignments found
+                  {isLoading ? 'Loading assignments...' : 'No assignments found'}
                 </td>
               </tr>
             ) : (
               assignments.map((assignment) => (
                 <tr
                   key={assignment._id}
+                  className="hover-row"
                   style={rowHoverStyle}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9fafb')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 >
                   <td style={cellStyle}>{assignment.courseName}</td>
-                  <td style={cellStyle}>{assignment.deadline}</td>
+                  <td style={cellStyle}>
+                    {new Date(assignment.deadline).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </td>
                   <td style={cellStyle}>{assignment.numStudents}</td>
                   <td style={{ ...cellStyle, textAlign: 'center' }}>
                     <button
                       onClick={() => setSelectedAssignment(assignment)}
-                      style={{
-                        backgroundColor: '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        padding: '8px 12px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.3s',
-                      }}
-                      onMouseEnter={(e) => (e.target.style.backgroundColor = '#1f2937')}
-                      onMouseLeave={(e) => (e.target.style.backgroundColor = '#f44336')}
+                      className="button-hover"
+                      style={buttonStyle}
                     >
                       View Details
                     </button>

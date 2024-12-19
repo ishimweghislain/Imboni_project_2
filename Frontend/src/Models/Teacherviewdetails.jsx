@@ -6,206 +6,201 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
   const [fileError, setFileError] = useState(null);
   const [studentSubmissions, setStudentSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch students for this specific assignment
     const fetchAssignmentStudents = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`http://localhost:5000/api/assignments/${assignment._id}/students`);
-        setStudentSubmissions(response.data);
+        setStudentSubmissions(response.data.students || []);
+        setError(null);
       } catch (error) {
         console.error('Error fetching assignment students:', error);
+        setError('Failed to load student submissions');
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (assignment._id) {
+    if (assignment?._id) {
       fetchAssignmentStudents();
     }
   }, [assignment]);
 
   const handleFilePreview = (fileUrl) => {
-    // Ensure the URL is a full URL or starts with the correct base path
-    const fullFileUrl = fileUrl.startsWith('http') 
-      ? fileUrl 
-      : `http://localhost:5000${fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`}`;
+    if (!fileUrl) {
+      setFileError('No file available for preview');
+      return;
+    }
 
-    const fileExtension = fullFileUrl.split('.').pop().toLowerCase();
+    // Extract just the filename from the full path
+    const filename = fileUrl.split('\\').pop().split('/').pop();
+    
+    // Construct the correct URL for the backend
+    const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
 
-    setFileError(null);
-
+    const fileExtension = filename.split('.').pop().toLowerCase();
     const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png'];
 
-    if (fullFileUrl && previewableTypes.includes(fileExtension)) {
+    if (previewableTypes.includes(fileExtension)) {
       setFilePreviewUrl(fullFileUrl);
+      setFileError(null);
     } else {
       setFileError('File type not supported for preview');
     }
   };
 
   const downloadFile = (fileUrl) => {
-    const fullFileUrl = fileUrl.startsWith('http') 
-      ? fileUrl 
-      : `http://localhost:5000${fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`}`;
+    if (!fileUrl) return;
+    
+    // Extract just the filename from the full path
+    const filename = fileUrl.split('\\').pop().split('/').pop();
+    
+    // Construct the correct URL for the backend
+    const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
 
     const link = document.createElement('a');
     link.href = fullFileUrl;
-    link.setAttribute('download', fileUrl.split('/').pop());
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     link.remove();
   };
 
+  if (!assignment) {
+    return null;
+  }
+
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        width: '90%',
-        maxWidth: '800px',
-        maxHeight: '90%',
-        overflowY: 'auto',
-        position: 'relative'
-      }}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg p-6 w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto relative">
         {/* Close Button */}
-        <div style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          cursor: 'pointer',
-          color: '#f44336',
-          fontSize: '1.5rem'
-        }} onClick={onClose}>
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-xl"
+        >
           <FaTimes />
-        </div>
+        </button>
 
-        <h2 style={{ color: '#f44336', marginBottom: '20px' }}>Assignment Details</h2>
+        <h2 className="text-red-500 text-2xl font-bold mb-6">Assignment Details</h2>
 
-        {/* Assignment Content */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Assignment Content</h3>
-          {assignment.file ? (
-            <div className="flex items-center mb-4">
-              {assignment.file.endsWith('.pdf') ? (
-                <FaFilePdf size={50} className="mr-3" color="#FF0000" />
-              ) : (
-                <FaFileImage size={50} className="mr-3" color="#4CAF50" />
-              )}
-              <div>
-                <p>{assignment.file}</p>
-                <div className="flex space-x-2 mt-2">
-                  <button
-                    onClick={() => handleFilePreview(`/uploads/${assignment.file}`)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
-                  >
-                    Preview
-                  </button>
-                  <button
-                    onClick={() => downloadFile(`/uploads/${assignment.file}`)}
-                    className="bg-green-500 text-white px-3 py-1 rounded"
-                  >
-                    Download
-                  </button>
+        {/* Assignment Information */}
+        <div className="mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold">Course</h3>
+              <p>{assignment.courseName}</p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Deadline</h3>
+              <p>{new Date(assignment.deadline).toLocaleString()}</p>
+            </div>
+          </div>
+
+          {/* Assignment Content */}
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2">Assignment Content</h3>
+            {assignment.file ? (
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                {assignment.file.toLowerCase().endsWith('.pdf') ? (
+                  <FaFilePdf size={40} className="text-red-500" />
+                ) : (
+                  <FaFileImage size={40} className="text-green-500" />
+                )}
+                <div>
+                  <p className="mb-2">{assignment.file.split('\\').pop().split('/').pop()}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleFilePreview(assignment.file)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Preview
+                    </button>
+                    <button
+                      onClick={() => downloadFile(assignment.file)}
+                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      Download
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <p>{assignment.assignmentText || 'No content provided'}</p>
-          )}
+            ) : (
+              <p className="p-4 bg-gray-50 rounded-lg">{assignment.assignmentText || 'No content provided'}</p>
+            )}
+          </div>
 
+          {/* File Preview */}
           {filePreviewUrl && (
-            <div
-              className="mt-4"
-              style={{
-                height: '500px',
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden',
-                backgroundColor: '#f9f9f9'
-              }}
-            >
-              {filePreviewUrl.endsWith('.pdf') ? (
+            <div className="mt-4 h-[500px] w-full flex justify-center items-center bg-gray-50 rounded-lg">
+              {filePreviewUrl.toLowerCase().endsWith('.pdf') ? (
                 <iframe
                   src={filePreviewUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 'none' }}
+                  className="w-full h-full rounded border-none"
                   title="File Preview"
                 />
               ) : (
                 <img
                   src={filePreviewUrl}
                   alt="Preview"
-                  style={{
-                    maxHeight: '100%',
-                    maxWidth: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '8px'
-                  }}
+                  className="max-h-full max-w-full object-contain rounded-lg"
+                  onError={() => setFileError('Failed to load image')}
                 />
               )}
             </div>
           )}
-
           {fileError && (
-            <div className="text-red-500 mt-2">{fileError}</div>
+            <p className="text-red-500 mt-2">{fileError}</p>
           )}
         </div>
 
         {/* Student Submissions */}
         <div>
-          <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>Student Submissions</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f1f1f1' }}>
-                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Student Name</th>
-                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Class</th>
-                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Submission Time</th>
-                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {studentSubmissions.map((submission, index) => (
-                <tr key={index}>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{submission.name}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{submission.class}</td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                    {submission.fileUrl ? submission.submissionTime : '-'}
-                  </td>
-                  <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
-                    <button
-                      style={{
-                        backgroundColor: submission.fileUrl ? '#4CAF50' : '#cccccc',
-                        color: 'white',
-                        border: 'none',
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        cursor: submission.fileUrl ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onClick={() => handleFilePreview(submission.fileUrl)}
-                      disabled={!submission.fileUrl}
-                    >
-                      View Submission
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h3 className="font-semibold mb-4">Student Submissions</h3>
+          {loading ? (
+            <p className="text-center py-4">Loading submissions...</p>
+          ) : error ? (
+            <p className="text-red-500 text-center py-4">{error}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="border px-4 py-2 text-left">Student Name</th>
+                    <th className="border px-4 py-2 text-left">Class</th>
+                    <th className="border px-4 py-2 text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {studentSubmissions.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="border px-4 py-2 text-center">
+                        No student submissions found
+                      </td>
+                    </tr>
+                  ) : (
+                    studentSubmissions.map((student, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border px-4 py-2">{student.name}</td>
+                        <td className="border px-4 py-2">{student.class}</td>
+                        <td className="border px-4 py-2">
+                          <span className={`px-2 py-1 rounded ${
+                            student.submissionStatus === 'submitted' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {student.submissionStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
