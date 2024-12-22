@@ -35,12 +35,8 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
       return;
     }
 
-    // Extract just the filename from the full path
     const filename = fileUrl.split('\\').pop().split('/').pop();
-    
-    // Construct the correct URL for the backend
     const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
-
     const fileExtension = filename.split('.').pop().toLowerCase();
     const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png'];
 
@@ -55,10 +51,7 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
   const downloadFile = (fileUrl) => {
     if (!fileUrl) return;
     
-    // Extract just the filename from the full path
     const filename = fileUrl.split('\\').pop().split('/').pop();
-    
-    // Construct the correct URL for the backend
     const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
 
     const link = document.createElement('a');
@@ -170,13 +163,14 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
                   <tr className="bg-gray-50">
                     <th className="border px-4 py-2 text-left">Student Name</th>
                     <th className="border px-4 py-2 text-left">Class</th>
+                    <th className="border px-4 py-2 text-left">Acronym</th>
                     <th className="border px-4 py-2 text-left">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {studentSubmissions.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="border px-4 py-2 text-center">
+                      <td colSpan="4" className="border px-4 py-2 text-center">
                         No student submissions found
                       </td>
                     </tr>
@@ -185,6 +179,7 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="border px-4 py-2">{student.name}</td>
                         <td className="border px-4 py-2">{student.class}</td>
+                        <td className="border px-4 py-2">{student.acronym}</td>
                         <td className="border px-4 py-2">
                           <span className={`px-2 py-1 rounded ${
                             student.submissionStatus === 'submitted' 

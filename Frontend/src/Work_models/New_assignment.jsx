@@ -16,7 +16,6 @@ const New_assignment = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch classes from backend
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -37,19 +36,23 @@ const New_assignment = () => {
   };
 
   const handleClassChange = (e) => {
-    const { options } = e.target;
-    const selected = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) selected.push(options[i].value);
-    }
-    setSelectedClasses(selected);
+    const selectedOptions = Array.from(e.target.selectedOptions);
+    const selectedValues = selectedOptions.map(option => {
+      // Parse the class details from the option value
+      const [level, program, acronym] = option.value.split('|');
+      return {
+        level,
+        program,
+        acronym
+      };
+    });
+    setSelectedClasses(selectedValues);
   };
 
-  // Validate form inputs
   const validateForm = async () => {
     const newErrors = {};
-    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
+    const today = new Date().toISOString().split('T')[0];
+  
     if (!teacherName.trim()) {
       newErrors.teacherName = 'Teacher name is required.';
     }
@@ -67,24 +70,25 @@ const New_assignment = () => {
     } else if (deadline < today) {
       newErrors.deadline = 'Deadline cannot be in the past.';
     }
-
-    // Validate student count with backend
+  
     if (!newErrors.numStudents && selectedClasses.length > 0) {
       try {
         const response = await axios.post('http://localhost:5000/api/classes/students-count', {
-          classes: selectedClasses,
+          classes: selectedClasses // Send the full selectedClasses array
         });
+        
         const actualStudentCount = response.data.totalStudents;
         const enteredStudentCount = parseInt(numStudents, 10);
-
+  
         if (enteredStudentCount !== actualStudentCount) {
           newErrors.numStudents = `Number of students mismatch! Expected: ${actualStudentCount}, Entered: ${enteredStudentCount}`;
         }
       } catch (error) {
+        console.error('Validation error:', error.response?.data || error.message);
         newErrors.numStudents = 'Unable to validate student count. Please try again.';
       }
     }
-
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -98,7 +102,7 @@ const New_assignment = () => {
       const formData = new FormData();
       formData.append('teacherName', teacherName);
       formData.append('courseName', courseName);
-      formData.append('selectedClasses', selectedClasses.join(','));
+      formData.append('selectedClasses', JSON.stringify(selectedClasses));
       formData.append('numStudents', numStudents);
       formData.append('deadline', deadline);
 
@@ -155,7 +159,7 @@ const New_assignment = () => {
           <select
             className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f44336] text-black"
             multiple
-            value={selectedClasses}
+            value={selectedClasses.map(c => `${c.level}|${c.program}|${c.acronym}`)}
             onChange={handleClassChange}
           >
             {isLoading ? (
@@ -164,7 +168,10 @@ const New_assignment = () => {
               <option disabled>{error}</option>
             ) : classOptions.length > 0 ? (
               classOptions.map((classOption) => (
-                <option key={classOption._id} value={classOption.level}>
+                <option 
+                  key={classOption._id} 
+                  value={`${classOption.level}|${classOption.program}|${classOption.acronym}`}
+                >
                   {classOption.level} - {classOption.program} ({classOption.acronym})
                 </option>
               ))

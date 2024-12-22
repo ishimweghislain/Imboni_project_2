@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Formdetails from '../Classes_info_notes/Formdetails'; // Import Formdetails component
 
@@ -7,43 +7,62 @@ const Myclasses_view = () => {
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);  // State to control modal visibility
   const [selectedClass, setSelectedClass] = useState(null);  // Store selected class data
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(null);
 
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/classes');
-        setClasses(response.data);
-      } catch (err) {
-        setError('Failed to fetch classes. Please try again later.');
-      }
-    };
+  const fetchClasses = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get('http://localhost:5000/api/classes');
+      
+      // Sorting classes by program and level
+      const sortedClasses = response.data.sort((a, b) => {
+        if (a.program === b.program) {
+          return a.level.localeCompare(b.level);
+        }
+        return a.program.localeCompare(b.program);
+      });
 
-    fetchClasses();
+      setClasses(sortedClasses);  // Update state with sorted classes
+      setLastUpdate(new Date());
+      setError(null);
+    } catch (error) {
+      setError('Failed to fetch classes. ' + (error.response?.data?.message || error.message));
+      console.error('Error fetching classes:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const openModal = async (classItem) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/classes/${classItem.level}`);
-      setSelectedClass(response.data);
-      setModalOpen(true);  // Open the modal when a class is selected
-    } catch (err) {
-      setError('Failed to fetch class details.');
-    }
-  };
+  useEffect(() => {
+    fetchClasses();
+    
+    // Set up polling every 30 seconds
+    const pollInterval = setInterval(fetchClasses, 30000);
+    
+    // Cleanup interval on component unmount
+    return () => clearInterval(pollInterval);
+  }, [fetchClasses]);
 
-  const closeModal = () => {
-    setModalOpen(false);  // Close the modal
-    setSelectedClass(null); // Reset selected class
+  const handleManualRefresh = () => {
+    fetchClasses();
   };
 
   const containerStyle = {
     width: '800px',
+    height: '450px',  // Fixed height like PassedAssignmentsView
     backgroundColor: 'white',
-    borderRadius: '8px',
+    borderRadius: '0.5rem',
     padding: '1rem',
     color: '#1f2937',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    margin: '2rem auto',
+  };
+
+  const tableContainerStyle = {
+    overflowY: 'auto',
+    height: '370px',  // Make the table scrollable inside this container
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
   };
 
   const tableStyle = {
@@ -52,68 +71,119 @@ const Myclasses_view = () => {
     borderWidth: '2px',
     borderStyle: 'solid',
     borderColor: 'transparent',
-    animation: 'animate-border 1s linear infinite',
+    animation: 'animate-border 1s linear infinite',  // Redline animation for border
   };
 
   const cellStyle = {
     padding: '16px',
-    borderBottom: '1px solid #ddd',
-    textAlign: 'center',
+    borderBottom: '1px solid #e0e0e0',
     fontSize: '14px',
     color: '#4a4a4a',
+    textAlign: 'center', // Added center alignment for table cell content
   };
 
   const rowHoverStyle = {
     backgroundColor: '#f9fafb',
   };
 
+  const errorStyle = {
+    color: 'red',
+    fontSize: '14px',
+    padding: '8px',
+    marginBottom: '8px',
+    backgroundColor: '#fee2e2',
+    borderRadius: '4px',
+  };
+
+  const buttonStyle = {
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    padding: '8px 12px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
+  };
+
+  const animateBorderKeyframes = `
+    @keyframes animate-border {
+      0% { border-color: transparent; }
+      50% { border-color: #f44336; }
+      100% { border-color: transparent; }
+    }
+  `;
+
   return (
     <div style={containerStyle}>
-      <h2 style={{ color: '#f44336', textAlign: 'center', marginBottom: '1rem' }}>
-        My Classes
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ color: '#f44336', margin: 0 }}>My Classes</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {lastUpdate && (
+            <span style={{ fontSize: '12px', color: '#666' }}>
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={handleManualRefresh}
+            style={{
+              ...buttonStyle,
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer'
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+      </div>
+      
+      {error && <div style={errorStyle}>{error}</div>}
 
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+      <style>{animateBorderKeyframes}</style>
 
-      <table style={tableStyle}>
-        <thead>
-          <tr style={{ backgroundColor: '#f1f1f1' }}>
-            <th style={cellStyle}>Level</th>
-            <th style={cellStyle}>Acronym</th>
-            <th style={cellStyle}>Total Students</th>
-            <th style={cellStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {classes.length === 0 ? (
-            <tr>
-              <td colSpan="4" style={{ ...cellStyle, textAlign: 'center' }}>
-                No classes found
-              </td>
+      <div style={tableContainerStyle} className="scrollable-container">
+        <table style={tableStyle}>
+          <thead>
+            <tr style={{ backgroundColor: '#f1f1f1' }}>
+              <th style={cellStyle}>Level</th>
+              <th style={cellStyle}>Acronym</th>
+              <th style={cellStyle}>Program</th>  {/* Added Program column */}
+              <th style={cellStyle}>Total Students</th>
+              <th style={cellStyle}>Actions</th>
             </tr>
-          ) : (
-            classes.map((classItem, index) => (
-              <tr
-                key={index}
-                style={rowHoverStyle}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = '#f9fafb')
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = '')
-                }
-              >
-                <td style={cellStyle}>{classItem.level}</td>
-                <td style={cellStyle}>{classItem.acronym || 'N/A'}</td>
-                <td style={cellStyle}>{classItem.totalstudents}</td>
-                <td style={cellStyle}>
-                  <HoverButton classItem={classItem} openModal={openModal} />
+          </thead>
+          <tbody>
+            {classes.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '16px', color: '#4a4a4a' }}>
+                  {isLoading ? 'Loading classes...' : 'No classes found'}
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              classes.map((classItem, index) => (
+                <tr
+                  key={index}
+                  style={rowHoverStyle}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = '#f9fafb')
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = '')
+                  }
+                >
+                  <td style={cellStyle}>{classItem.level}</td>
+                  <td style={cellStyle}>{classItem.acronym || 'N/A'}</td>
+                  <td style={cellStyle}>{classItem.program || 'N/A'}</td> {/* Program column content */}
+                  <td style={cellStyle}>{classItem.totalstudents}</td>
+                  <td style={cellStyle}>
+                    <HoverButton classItem={classItem} openModal={setModalOpen} setSelectedClass={setSelectedClass} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal for displaying class details */}
       {modalOpen && selectedClass && (
@@ -137,7 +207,7 @@ const Myclasses_view = () => {
             position: 'relative',
           }}>
             <button
-              onClick={closeModal}
+              onClick={() => setModalOpen(false)}
               style={{
                 position: 'absolute',
                 top: '10px',
@@ -159,7 +229,7 @@ const Myclasses_view = () => {
   );
 };
 
-const HoverButton = ({ classItem, openModal }) => {
+const HoverButton = ({ classItem, openModal, setSelectedClass }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const buttonStyle = {
@@ -175,7 +245,10 @@ const HoverButton = ({ classItem, openModal }) => {
   return (
     <button
       style={buttonStyle}
-      onClick={() => openModal(classItem)}
+      onClick={() => {
+        setSelectedClass(classItem); // Set the class to be viewed
+        openModal(true); // Open the modal
+      }}
       onMouseEnter={() => setIsHovered(true)} // Set hover state
       onMouseLeave={() => setIsHovered(false)} // Reset hover state
     >

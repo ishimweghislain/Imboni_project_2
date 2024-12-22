@@ -69,6 +69,7 @@ const PassedAssignmentsView = () => {
     borderBottom: '1px solid #e0e0e0',
     fontSize: '14px',
     color: '#4a4a4a',
+    textAlign: 'center', // Ensure content is centered horizontally
   };
 
   const rowHoverStyle = {
@@ -180,7 +181,7 @@ const PassedAssignmentsView = () => {
                     })}
                   </td>
                   <td style={cellStyle}>{assignment.numStudents}</td>
-                  <td style={{ ...cellStyle, textAlign: 'center' }}>
+                  <td style={cellStyle}>
                     <button
                       onClick={() => setSelectedAssignment(assignment)}
                       className="button-hover"

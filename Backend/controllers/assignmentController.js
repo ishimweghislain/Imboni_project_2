@@ -2,7 +2,6 @@ const Assignment = require('../models/assignment');
 const Class = require('../models/class');
 const path = require('path');
 
-// Create a new assignment
 exports.createAssignment = async (req, res) => {
   try {
     const {
@@ -13,30 +12,49 @@ exports.createAssignment = async (req, res) => {
       assignmentText
     } = req.body;
 
-    // Handle file path
     const filePath = req.file ? req.file.path : null;
 
-    // Ensure selectedClasses is properly parsed into an array
-    const selectedClassesArray = selectedClasses.split(',').map(cls => cls.trim());
+    // Parse the selectedClasses if it's a string
+    let selectedClassesArray;
+    try {
+      selectedClassesArray = typeof selectedClasses === 'string' 
+        ? JSON.parse(selectedClasses) 
+        : selectedClasses;
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid class selection format' });
+    }
 
-    // Create a new assignment document
+    // Store complete class information
+    const classIdentifiers = selectedClassesArray.map(cls => ({
+      level: cls.level,
+      program: cls.program,
+      acronym: cls.acronym
+    }));
+
+    // Create a new assignment document with complete class information
     const newAssignment = new Assignment({
       teacherName,
       courseName,
-      selectedClasses: selectedClassesArray,
+      selectedClasses: classIdentifiers, // Store complete class information
       deadline,
       assignmentText,
-      file: filePath, // Store the file path
+      file: filePath,
     });
 
     // Save the assignment in the database
     const savedAssignment = await newAssignment.save();
 
-    // Fetch current student count
-    const classes = await Class.find({ level: { $in: selectedClassesArray } });
+    // Fetch current student count for exactly matched classes
+    const classes = await Class.find({
+      $or: classIdentifiers.map(cls => ({
+        level: cls.level,
+        program: cls.program,
+        acronym: cls.acronym
+      }))
+    });
+
     const currentStudentCount = classes.reduce((total, cls) => total + cls.students.length, 0);
 
-    // Respond with success and the saved assignment
     res.status(201).json({
       message: 'Assignment created successfully',
       assignment: {
@@ -53,7 +71,6 @@ exports.createAssignment = async (req, res) => {
   }
 };
 
-// Fetch all assignments with current student counts
 exports.getAssignments = async (req, res) => {
   try {
     const assignments = await Assignment.find({});
@@ -62,11 +79,15 @@ exports.getAssignments = async (req, res) => {
       return res.status(404).json({ message: 'No assignments found' });
     }
 
-    // Get current student counts for each assignment
+    // Get current student counts for exactly matched classes
     const assignmentsWithCurrentCounts = await Promise.all(
       assignments.map(async (assignment) => {
-        const classes = await Class.find({ 
-          level: { $in: assignment.selectedClasses } 
+        const classes = await Class.find({
+          $or: assignment.selectedClasses.map(cls => ({
+            level: cls.level,
+            program: cls.program,
+            acronym: cls.acronym
+          }))
         });
         
         const currentStudentCount = classes.reduce(
@@ -76,7 +97,7 @@ exports.getAssignments = async (req, res) => {
 
         return {
           ...assignment.toObject(),
-          numStudents: currentStudentCount // Override the stored count with current count
+          numStudents: currentStudentCount
         };
       })
     );
@@ -88,28 +109,31 @@ exports.getAssignments = async (req, res) => {
   }
 };
 
-// Fetch students for specific classes assigned to an assignment
 const getAssignmentStudents = async (req, res) => {
   try {
     const { assignmentId } = req.params;
 
-    // Find the assignment first
     const assignment = await Assignment.findById(assignmentId);
     
     if (!assignment) {
       return res.status(404).json({ message: 'Assignment not found' });
     }
 
-    // Find students from the assigned classes
+    // Find students from exactly matched classes
     const classes = await Class.find({
-      level: { $in: assignment.selectedClasses }
-    }).select('students.name level students.submissionStatus');
+      $or: assignment.selectedClasses.map(cls => ({
+        level: cls.level,
+        program: cls.program,
+        acronym: cls.acronym
+      }))
+    }).select('students.name level program acronym students.submissionStatus');
 
-    // Flatten the students array and add class level
     const formattedStudents = classes.flatMap(classDoc =>
       classDoc.students.map(student => ({
         name: student.name,
         class: classDoc.level,
+        program: classDoc.program,
+        acronym: classDoc.acronym,
         submissionStatus: student.submissionStatus
       }))
     );
