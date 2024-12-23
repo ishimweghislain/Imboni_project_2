@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { Link, useLocation } from 'react-router-dom';
 import { FaHome, FaInfoCircle, FaMoneyBillWave, FaChalkboardTeacher, FaBullhorn, FaPhoneAlt, FaBookOpen } from 'react-icons/fa';
 
@@ -21,9 +21,7 @@ const Navbar = ({ isHome }) => {
     };
   }, []);
 
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
+  const isActive = (path) => location.pathname === path;
 
   const getIcon = (link) => {
     switch (link) {
@@ -67,9 +65,9 @@ const Navbar = ({ isHome }) => {
           <Link
             key={link}
             to={`/${link.toLowerCase()}`}
-            className={`cursor-pointer relative flex items-center transition-colors duration-300 ${
+            className={`cursor-pointer relative flex items-center transition-colors duration-300 group ${
               isActive(`/${link.toLowerCase()}`)
-                ? 'text-[#f44336] after:bg-[#f44336]'
+                ? 'text-[#f44336]'
                 : isHome && !isScrolled
                 ? 'text-white hover:text-[#f44336]'
                 : 'text-white hover:text-[#f44336]'
@@ -77,9 +75,11 @@ const Navbar = ({ isHome }) => {
           >
             {getIcon(link)}
             {link}
-            {isActive(`/${link.toLowerCase()}`) && (
-              <div className="absolute w-full h-1 bottom-0 left-0 bg-[#f44336]"></div>
-            )}
+            <span
+              className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#f44336] rounded-full transition-all duration-300 ease-in-out ${
+                isActive(`/${link.toLowerCase()}`) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+              } origin-left`}
+            ></span>
           </Link>
         ))}
       </div>
