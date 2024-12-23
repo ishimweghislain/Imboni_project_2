@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { FaUpload, FaSearch, FaEye } from 'react-icons/fa';  // Added FaEye for View action
-import Formdetails from '../Classes_info_notes/Formdetails'; // Import Formdetails component
-
+import { FaUpload, FaSearch, FaEye } from 'react-icons/fa'; 
+import Formdetails from '../Classes_info_notes/Formdetails'; 
 const Myclasses_view = () => {
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);  // State to control modal visibility
-  const [selectedClass, setSelectedClass] = useState(null);  // Store selected class data
+  const [modalOpen, setModalOpen] = useState(false);  
+  const [selectedClass, setSelectedClass] = useState(null);  
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
 
