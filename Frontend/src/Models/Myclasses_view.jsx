@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { FaUpload, FaSearch, FaEye } from 'react-icons/fa';  // Added FaEye for View action
 import Formdetails from '../Classes_info_notes/Formdetails'; // Import Formdetails component
 
 const Myclasses_view = () => {
@@ -99,19 +100,37 @@ const Myclasses_view = () => {
     backgroundColor: '#f44336',
     color: 'white',
     border: 'none',
-    padding: '8px 12px',
+    padding: '8px 12px', // Slightly reduced padding to make the buttons more compact
     borderRadius: '4px',
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '100px', // Reduced min width to make them compact
+    fontSize: '12px',  // Reduced font size
+    margin: '4px', // Spacing between buttons
     transition: 'background-color 0.3s',
   };
 
-  const animateBorderKeyframes = `
-    @keyframes animate-border {
-      0% { border-color: transparent; }
-      50% { border-color: #f44336; }
-      100% { border-color: transparent; }
-    }
-  `;
+  const buttonContainerStyle = {
+    display: 'flex', 
+    justifyContent: 'space-between',  // Ensures buttons are aligned in a row
+    gap: '8px', // Provides some spacing between buttons
+  };
+
+  const buttonIconStyle = {
+    marginRight: '8px',  // Space between icon and text
+  };
+
+  const buttonHoverStyle = {
+    backgroundColor: '#2d3748',  // Dark gray background when hovering
+  };
+
+  const animateBorderKeyframes = `@keyframes animate-border {
+    0% { border-color: transparent; }
+    50% { border-color: #f44336; }
+    100% { border-color: transparent; }
+  }`;
 
   return (
     <div style={containerStyle}>
@@ -147,7 +166,7 @@ const Myclasses_view = () => {
             <tr style={{ backgroundColor: '#f1f1f1' }}>
               <th style={cellStyle}>Level</th>
               <th style={cellStyle}>Acronym</th>
-              <th style={cellStyle}>Program</th>  {/* Added Program column */}
+              <th style={cellStyle}>Program</th>
               <th style={cellStyle}>Total Students</th>
               <th style={cellStyle}>Actions</th>
             </tr>
@@ -164,19 +183,51 @@ const Myclasses_view = () => {
                 <tr
                   key={index}
                   style={rowHoverStyle}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = '#f9fafb')
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = '')
-                  }
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9fafb')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                 >
                   <td style={cellStyle}>{classItem.level}</td>
                   <td style={cellStyle}>{classItem.acronym || 'N/A'}</td>
-                  <td style={cellStyle}>{classItem.program || 'N/A'}</td> {/* Program column content */}
+                  <td style={cellStyle}>{classItem.program || 'N/A'}</td>
                   <td style={cellStyle}>{classItem.totalstudents}</td>
                   <td style={cellStyle}>
-                    <HoverButton classItem={classItem} openModal={setModalOpen} setSelectedClass={setSelectedClass} />
+                    <div style={buttonContainerStyle}>
+                      {/* View button */}
+                      <button
+                        style={buttonStyle}
+                        onClick={() => {
+                          setSelectedClass(classItem);
+                          setModalOpen(true);
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d3748')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f44336')}
+                      >
+                        <FaEye style={buttonIconStyle} />
+                        View
+                      </button>
+
+                      {/* Upload button */}
+                      <button
+                        style={buttonStyle}
+                        onClick={() => console.log('Upload for class', classItem)}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d3748')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f44336')}
+                      >
+                        <FaUpload style={buttonIconStyle} />
+                        Upload
+                      </button>
+
+                      {/* Update button */}
+                      <button
+                        style={buttonStyle}
+                        onClick={() => console.log('Update class', classItem)}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d3748')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f44336')}
+                      >
+                        <FaSearch style={buttonIconStyle} />
+                        Update
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -226,34 +277,6 @@ const Myclasses_view = () => {
         </div>
       )}
     </div>
-  );
-};
-
-const HoverButton = ({ classItem, openModal, setSelectedClass }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const buttonStyle = {
-    backgroundColor: isHovered ? '#4a5568' : '#f44336', // Change color on hover
-    color: 'white',
-    border: 'none',
-    padding: '6px 12px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s',
-  };
-
-  return (
-    <button
-      style={buttonStyle}
-      onClick={() => {
-        setSelectedClass(classItem); // Set the class to be viewed
-        openModal(true); // Open the modal
-      }}
-      onMouseEnter={() => setIsHovered(true)} // Set hover state
-      onMouseLeave={() => setIsHovered(false)} // Reset hover state
-    >
-      View
-    </button>
   );
 };
 

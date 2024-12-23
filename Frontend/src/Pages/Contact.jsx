@@ -30,7 +30,7 @@ const Contact = () => {
         `}
       </style>
 
-      <div className="min-h-screen bg-gray-900 p-8 mt-20">
+      <div className="min-h-screen bg-gray-900 p-8 mt-16">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
           {/* Left - Contact Form Section */}
           <div className="flex-1">
