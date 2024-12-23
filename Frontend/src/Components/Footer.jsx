@@ -31,6 +31,8 @@ const Footer = () => {
           <ul className="list-unstyled">
             <li><a href="/" className="text-light link-hover">Home</a></li>
             <li><a href="/about" className="text-light link-hover">About</a></li>
+            <li><a href="/pricing" className="text-light link-hover">Pricing</a></li>
+            <li><a href="/blogs" className="text-light link-hover">blogs</a></li>
             <li><a href="/contact" className="text-light link-hover">Contact</a></li>
            
           </ul>
@@ -39,9 +41,9 @@ const Footer = () => {
         <div className="col-md-3">
          <b><h1>Our Goals</h1></b>
           <ul className="list-unstyled">
-            <li><a href="/" className="text-light link-hover">Lorem Ispum</a></li>
-            <li><a href="/about" className="text-light link-hover">Lorem Ispum</a></li>
-            <li><a href="/contact" className="text-light link-hover">Lorem Ispum</a></li>
+            <li><a href="/" className="text-light link-hover"> Win back your time</a></li>
+            <li><a href="/about" className="text-light link-hover">E-learning</a></li>
+            <li><a href="/contact" className="text-light link-hover">Learn Far away</a></li>
            
           </ul>
         </div>

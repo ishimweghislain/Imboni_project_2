@@ -8,13 +8,17 @@ const Home = () => {
     navigate('/login', { state: { showCreateAccount: true } });  // Navigate and pass state
   };
 
+  const handleWhyImboniClick = () => {
+    navigate('/goals');  // Navigate to the Goals page
+  };
+
   return (
     <div
       className="relative h-screen bg-cover bg-center overflow-hidden"
       style={{ backgroundImage: "url('/user2.png.jpg')" }}
     >
       <div className="flex flex-col items-start justify-center h-full text-left bg-black bg-opacity-50 px-4 animate-slide-in">
-        <div className='home-content'>
+        <div className="home-content">
           <h1 className="text-white text-4xl md:text-6xl font-bold mb-4">
             Come and Attain All Your Goals
           </h1>
@@ -24,14 +28,17 @@ const Home = () => {
             whether at home or anywhere else.
           </p>
           <div className="flex space-x-4">
-            <button className="bg-[#f44336] text-white px-6 py-2 rounded-md font-semibold hover:bg-gray-700 transition duration-300">
+            <button 
+              className="bg-[#f44336] text-white px-6 py-2 rounded-md font-semibold hover:bg-gray-700 transition duration-300"
+              onClick={handleWhyImboniClick}  // Add click handler for "Why Imboni?"
+            >
               Why Imboni?
             </button>
             <button 
               className="bg-[#f44336] text-white px-6 py-2 rounded-md font-semibold hover:bg-gray-700 transition duration-300"
-              onClick={handleCreateAccountClick}  // Add click handler here
+              onClick={handleCreateAccountClick}  // Add click handler for "Get started"
             >
-              Create Account
+              Get started
             </button>
           </div>
         </div>

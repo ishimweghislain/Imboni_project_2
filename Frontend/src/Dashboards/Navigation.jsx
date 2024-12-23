@@ -38,7 +38,7 @@ const Navigation = ({ onToggle }) => {
               to={user?.role === 'student' ? '/student-dashboard' : '/teacher-dashboard'}
               className="font-bold text-xl"
             >
-              InTambi
+              ImBoni
             </Link>
           </div>
 
