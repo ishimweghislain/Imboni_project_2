@@ -16,6 +16,15 @@ const ClassSelectionSchema = new mongoose.Schema({
 }, { _id: false });
 
 const AssignmentSchema = new mongoose.Schema({
+  teacherId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  teacherEmail: {
+    type: String,
+    required: true
+  },
   teacherName: { 
     type: String, 
     required: true 
@@ -41,13 +50,13 @@ const AssignmentSchema = new mongoose.Schema({
   assignmentText: { 
     type: String,
     required: function() {
-      return !this.file; // Required if no file is uploaded
+      return !this.file;
     }
   },
   file: { 
-    type: String, // Path to the uploaded file
+    type: String,
     required: function() {
-      return !this.assignmentText; // Required if no assignment text is provided
+      return !this.assignmentText;
     }
   }
 }, {
@@ -95,9 +104,10 @@ AssignmentSchema.statics.findActive = function() {
   });
 };
 
-// Index for efficient queries
+// Indexes for efficient queries
 AssignmentSchema.index({ deadline: 1 });
 AssignmentSchema.index({ 'selectedClasses.level': 1 });
 AssignmentSchema.index({ teacherName: 1 });
+AssignmentSchema.index({ teacherId: 1 });
 
 module.exports = mongoose.model('Assignment', AssignmentSchema);

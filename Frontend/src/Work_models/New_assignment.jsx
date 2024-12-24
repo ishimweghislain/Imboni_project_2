@@ -11,6 +11,7 @@ const New_assignment = () => {
   const [deadline, setDeadline] = useState('');
   const [assignmentText, setAssignmentText] = useState('');
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [classOptions, setClassOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,12 +20,21 @@ const New_assignment = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/classes');
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/classes', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setClassOptions(response.data);
         setIsLoading(false);
       } catch (error) {
         setError('Failed to fetch classes');
         setIsLoading(false);
+        if (error.response?.status === 401) {
+          // Handle unauthorized access - maybe redirect to login
+          window.location.href = '/login';
+        }
       }
     };
 
@@ -32,13 +42,33 @@ const New_assignment = () => {
   }, []);
 
   const handleFileUpload = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      // Check file size (10MB limit)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          file: 'File size must be less than 10MB'
+        }));
+        return;
+      }
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+      if (!allowedTypes.includes(selectedFile.type)) {
+        setErrors(prev => ({
+          ...prev,
+          file: 'Only images (JPEG, PNG, GIF) and PDFs are allowed'
+        }));
+        return;
+      }
+      setFile(selectedFile);
+      setErrors(prev => ({ ...prev, file: null }));
+    }
   };
 
   const handleClassChange = (e) => {
     const selectedOptions = Array.from(e.target.selectedOptions);
     const selectedValues = selectedOptions.map(option => {
-      // Parse the class details from the option value
       const [level, program, acronym] = option.value.split('|');
       return {
         level,
@@ -70,12 +100,25 @@ const New_assignment = () => {
     } else if (deadline < today) {
       newErrors.deadline = 'Deadline cannot be in the past.';
     }
+    if (attachFile && !file) {
+      newErrors.file = 'Please select a file to upload.';
+    }
+    if (!attachFile && !assignmentText.trim()) {
+      newErrors.assignmentText = 'Please enter assignment text or attach a file.';
+    }
   
     if (!newErrors.numStudents && selectedClasses.length > 0) {
       try {
-        const response = await axios.post('http://localhost:5000/api/classes/students-count', {
-          classes: selectedClasses // Send the full selectedClasses array
-        });
+        const token = localStorage.getItem('token');
+        const response = await axios.post(
+          'http://localhost:5000/api/classes/students-count',
+          { classes: selectedClasses },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
         
         const actualStudentCount = response.data.totalStudents;
         const enteredStudentCount = parseInt(numStudents, 10);
@@ -95,31 +138,64 @@ const New_assignment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const isValid = await validateForm();
+    try {
+      const isValid = await validateForm();
 
-    if (isValid) {
-      const formData = new FormData();
-      formData.append('teacherName', teacherName);
-      formData.append('courseName', courseName);
-      formData.append('selectedClasses', JSON.stringify(selectedClasses));
-      formData.append('numStudents', numStudents);
-      formData.append('deadline', deadline);
+      if (isValid) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found. Please log in again.');
+        }
 
-      if (attachFile && file) {
-        formData.append('file', file);
-      } else {
-        formData.append('assignmentText', assignmentText);
-      }
+        const formData = new FormData();
+        formData.append('teacherName', teacherName);
+        formData.append('courseName', courseName);
+        formData.append('selectedClasses', JSON.stringify(selectedClasses));
+        formData.append('numStudents', numStudents);
+        formData.append('deadline', deadline);
 
-      try {
-        const response = await axios.post('http://localhost:5000/api/assignments/', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        if (attachFile && file) {
+          formData.append('file', file);
+        } else {
+          formData.append('assignmentText', assignmentText);
+        }
+
+        const response = await axios.post(
+          'http://localhost:5000/api/assignments/',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${token}`
+            },
+          }
+        );
+
+        // Clear form after successful submission
+        setTeacherName('');
+        setCourseName('');
+        setSelectedClasses([]);
+        setNumStudents('');
+        setDeadline('');
+        setAssignmentText('');
+        setFile(null);
+        setAttachFile(false);
+        setErrors({});
+
         alert('Assignment submitted successfully!');
-      } catch (error) {
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        alert('Your session has expired. Please log in again.');
+        // Redirect to login page
+        window.location.href = '/login';
+      } else {
         alert(`Failed to submit assignment: ${error.response?.data?.message || error.message}`);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -136,6 +212,7 @@ const New_assignment = () => {
             placeholder="Enter teacher's name"
             value={teacherName}
             onChange={(e) => setTeacherName(e.target.value)}
+            disabled={isSubmitting}
           />
           {errors.teacherName && <p className="text-red-500 text-sm">{errors.teacherName}</p>}
         </div>
@@ -149,6 +226,7 @@ const New_assignment = () => {
             placeholder="Enter course name"
             value={courseName}
             onChange={(e) => setCourseName(e.target.value)}
+            disabled={isSubmitting}
           />
           {errors.courseName && <p className="text-red-500 text-sm">{errors.courseName}</p>}
         </div>
@@ -161,6 +239,7 @@ const New_assignment = () => {
             multiple
             value={selectedClasses.map(c => `${c.level}|${c.program}|${c.acronym}`)}
             onChange={handleClassChange}
+            disabled={isSubmitting}
           >
             {isLoading ? (
               <option disabled>Loading classes...</option>
@@ -191,6 +270,7 @@ const New_assignment = () => {
             placeholder="Enter number of students"
             value={numStudents}
             onChange={(e) => setNumStudents(e.target.value)}
+            disabled={isSubmitting}
           />
           {errors.numStudents && <p className="text-red-500 text-sm">{errors.numStudents}</p>}
         </div>
@@ -203,6 +283,7 @@ const New_assignment = () => {
             className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f44336] text-black"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
+            disabled={isSubmitting}
           />
           {errors.deadline && <p className="text-red-500 text-sm">{errors.deadline}</p>}
         </div>
@@ -218,6 +299,7 @@ const New_assignment = () => {
                 setAttachFile(!attachFile);
                 setFile(null);
               }}
+              disabled={isSubmitting}
             />
             <span className="text-gray-700">Yes</span>
           </div>
@@ -229,7 +311,9 @@ const New_assignment = () => {
             <div className="flex items-center">
               <label
                 htmlFor="fileInput"
-                className="bg-[#f44336] text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-800"
+                className={`bg-[#f44336] text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-800 ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 Choose File
               </label>
@@ -238,6 +322,7 @@ const New_assignment = () => {
                 type="file"
                 className="hidden"
                 onChange={handleFileUpload}
+                disabled={isSubmitting}
               />
               {file && (
                 <p className="ml-4 text-gray-600">
@@ -255,6 +340,7 @@ const New_assignment = () => {
               placeholder="Enter assignment text"
               value={assignmentText}
               onChange={(e) => setAssignmentText(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.assignmentText && <p className="text-red-500 text-sm">{errors.assignmentText}</p>}
           </div>
@@ -262,9 +348,12 @@ const New_assignment = () => {
 
         <button
           type="submit"
-          className="bg-[#f44336] text-white px-4 py-2 rounded-lg hover:bg-gray-800"
+          className={`bg-[#f44336] text-white px-4 py-2 rounded-lg hover:bg-gray-800 ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={isSubmitting}
         >
-          Submit Assignment
+          {isSubmitting ? 'Submitting...' : 'Submit Assignment'}
         </button>
       </form>
     </div>

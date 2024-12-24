@@ -9,10 +9,17 @@ const PassedAssignmentsView = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
 
+  // Token from local storage or context (assumed to be stored after login)
+  const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+
   const fetchAssignments = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:5000/api/assignments');
+      const response = await axios.get('http://localhost:5000/api/assignments', {
+        headers: {
+          'Authorization': `Bearer ${token}`,  // Attach token to the request
+        }
+      });
       setAssignments(response.data);
       setLastUpdate(new Date());
       setError(null);
@@ -22,7 +29,7 @@ const PassedAssignmentsView = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     fetchAssignments();

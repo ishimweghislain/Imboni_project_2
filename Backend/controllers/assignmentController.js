@@ -4,6 +4,10 @@ const path = require('path');
 
 exports.createAssignment = async (req, res) => {
   try {
+    // Get teacher information from the authenticated user
+    const teacherId = req.user.id;
+    const teacherEmail = req.user.email;
+
     const {
       teacherName,
       courseName,
@@ -31,20 +35,20 @@ exports.createAssignment = async (req, res) => {
       acronym: cls.acronym
     }));
 
-    // Create a new assignment document with complete class information
+    // Create a new assignment document with teacher info
     const newAssignment = new Assignment({
+      teacherId,
+      teacherEmail,
       teacherName,
       courseName,
-      selectedClasses: classIdentifiers, // Store complete class information
+      selectedClasses: classIdentifiers,
       deadline,
       assignmentText,
       file: filePath,
     });
 
-    // Save the assignment in the database
     const savedAssignment = await newAssignment.save();
 
-    // Fetch current student count for exactly matched classes
     const classes = await Class.find({
       $or: classIdentifiers.map(cls => ({
         level: cls.level,
@@ -73,13 +77,16 @@ exports.createAssignment = async (req, res) => {
 
 exports.getAssignments = async (req, res) => {
   try {
-    const assignments = await Assignment.find({});
+    // Get teacher ID from authenticated user
+    const teacherId = req.user.id;
+    
+    // Only fetch assignments for the authenticated teacher
+    const assignments = await Assignment.find({ teacherId });
 
     if (assignments.length === 0) {
       return res.status(404).json({ message: 'No assignments found' });
     }
 
-    // Get current student counts for exactly matched classes
     const assignmentsWithCurrentCounts = await Promise.all(
       assignments.map(async (assignment) => {
         const classes = await Class.find({
@@ -112,14 +119,18 @@ exports.getAssignments = async (req, res) => {
 const getAssignmentStudents = async (req, res) => {
   try {
     const { assignmentId } = req.params;
+    const teacherId = req.user.id;
 
-    const assignment = await Assignment.findById(assignmentId);
+    // Find assignment and verify it belongs to the requesting teacher
+    const assignment = await Assignment.findOne({ 
+      _id: assignmentId,
+      teacherId: teacherId 
+    });
     
     if (!assignment) {
-      return res.status(404).json({ message: 'Assignment not found' });
+      return res.status(404).json({ message: 'Assignment not found or unauthorized' });
     }
 
-    // Find students from exactly matched classes
     const classes = await Class.find({
       $or: assignment.selectedClasses.map(cls => ({
         level: cls.level,

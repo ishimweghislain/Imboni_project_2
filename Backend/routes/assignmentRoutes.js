@@ -3,6 +3,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
+const protect = require('../middlewares/authMiddleware');
 
 const { 
   createAssignment, 
@@ -43,13 +44,9 @@ const upload = multer({
   },
 });
 
-// Route to create a new assignment
-router.post('/', upload.single('file'), createAssignment);
-
-// Route to get all assignments
-router.get('/', getAssignments);
-
-// Route to get students for a specific assignment
-router.get('/:assignmentId/students', getAssignmentStudents);
+// Protected routes - only accessible to authenticated users
+router.post('/', protect, upload.single('file'), createAssignment);
+router.get('/', protect, getAssignments);
+router.get('/:assignmentId/students', protect, getAssignmentStudents);
 
 module.exports = router;

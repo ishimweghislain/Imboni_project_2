@@ -13,12 +13,32 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
     const fetchAssignmentStudents = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/assignments/${assignment._id}/students`);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(
+          `http://localhost:5000/api/assignments/${assignment._id}/students`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
         setStudentSubmissions(response.data.students || []);
         setError(null);
       } catch (error) {
         console.error('Error fetching assignment students:', error);
-        setError('Failed to load student submissions');
+        if (error.response?.status === 401) {
+          setError('Session expired. Please log in again');
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+        } else {
+          setError('Failed to load student submissions');
+        }
       } finally {
         setLoading(false);
       }
@@ -35,6 +55,15 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
       return;
     }
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setFileError('Authentication required');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+      return;
+    }
+
     const filename = fileUrl.split('\\').pop().split('/').pop();
     const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
     const fileExtension = filename.split('.').pop().toLowerCase();
@@ -48,18 +77,54 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
     }
   };
 
-  const downloadFile = (fileUrl) => {
-    if (!fileUrl) return;
+  const downloadFile = async (fileUrl) => {
+    if (!fileUrl) {
+      setFileError('No file available for download');
+      return;
+    }
     
-    const filename = fileUrl.split('\\').pop().split('/').pop();
-    const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setFileError('Authentication required');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+      return;
+    }
 
-    const link = document.createElement('a');
-    link.href = fullFileUrl;
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    try {
+      const filename = fileUrl.split('\\').pop().split('/').pop();
+      const fullFileUrl = `http://localhost:5000/uploads/${filename}`;
+
+      const response = await axios({
+        url: fullFileUrl,
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setFileError(null);
+    } catch (error) {
+      console.error('Download error:', error);
+      if (error.response?.status === 401) {
+        setFileError('Session expired. Please log in again');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+      } else {
+        setFileError('Failed to download file');
+      }
+    }
   };
 
   if (!assignment) {
