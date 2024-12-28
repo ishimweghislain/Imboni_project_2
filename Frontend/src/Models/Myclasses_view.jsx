@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { FaUpload, FaSearch, FaEye } from 'react-icons/fa'; 
-import Formdetails from '../Classes_info_notes/Formdetails'; 
+import { FaUpload, FaSearch, FaEye } from 'react-icons/fa';
+import Formdetails from '../Classes_info_notes/Formdetails';
+import Formfornotes from '../Uploads/Formfornotes';
+
 const Myclasses_view = () => {
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);  
-  const [selectedClass, setSelectedClass] = useState(null);  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
 
@@ -23,7 +26,7 @@ const Myclasses_view = () => {
         return a.program.localeCompare(b.program);
       });
 
-      setClasses(sortedClasses);  // Update state with sorted classes
+      setClasses(sortedClasses);
       setLastUpdate(new Date());
       setError(null);
     } catch (error) {
@@ -50,7 +53,7 @@ const Myclasses_view = () => {
 
   const containerStyle = {
     width: '800px',
-    height: '450px',  // Fixed height like PassedAssignmentsView
+    height: '450px',
     backgroundColor: 'white',
     borderRadius: '0.5rem',
     padding: '1rem',
@@ -60,7 +63,7 @@ const Myclasses_view = () => {
 
   const tableContainerStyle = {
     overflowY: 'auto',
-    height: '370px',  // Make the table scrollable inside this container
+    height: '370px',
     scrollbarWidth: 'none',
     msOverflowStyle: 'none',
   };
@@ -71,7 +74,7 @@ const Myclasses_view = () => {
     borderWidth: '2px',
     borderStyle: 'solid',
     borderColor: 'transparent',
-    animation: 'animate-border 1s linear infinite',  // Redline animation for border
+    animation: 'animate-border 1s linear infinite',
   };
 
   const cellStyle = {
@@ -79,7 +82,7 @@ const Myclasses_view = () => {
     borderBottom: '1px solid #e0e0e0',
     fontSize: '14px',
     color: '#4a4a4a',
-    textAlign: 'center', // Added center alignment for table cell content
+    textAlign: 'center',
   };
 
   const rowHoverStyle = {
@@ -99,30 +102,50 @@ const Myclasses_view = () => {
     backgroundColor: '#f44336',
     color: 'white',
     border: 'none',
-    padding: '8px 12px', // Slightly reduced padding to make the buttons more compact
+    padding: '8px 12px',
     borderRadius: '4px',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: '100px', // Reduced min width to make them compact
-    fontSize: '12px',  // Reduced font size
-    margin: '4px', // Spacing between buttons
+    minWidth: '100px',
+    fontSize: '12px',
+    margin: '4px',
     transition: 'background-color 0.3s',
   };
 
   const buttonContainerStyle = {
-    display: 'flex', 
-    justifyContent: 'space-between',  // Ensures buttons are aligned in a row
-    gap: '8px', // Provides some spacing between buttons
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '8px',
   };
 
   const buttonIconStyle = {
-    marginRight: '8px',  // Space between icon and text
+    marginRight: '8px',
   };
 
-  const buttonHoverStyle = {
-    backgroundColor: '#2d3748',  // Dark gray background when hovering
+  const modalStyle = {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    right: '0',
+    bottom: '0',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  };
+
+  const modalContentStyle = {
+    backgroundColor: 'white',
+    padding: '2rem',
+    borderRadius: '8px',
+    maxWidth: '800px',
+    width: '100%',
+    position: 'relative',
+    maxHeight: '90vh',
+    overflowY: 'auto',
   };
 
   const animateBorderKeyframes = `@keyframes animate-border {
@@ -191,7 +214,6 @@ const Myclasses_view = () => {
                   <td style={cellStyle}>{classItem.totalstudents}</td>
                   <td style={cellStyle}>
                     <div style={buttonContainerStyle}>
-                      {/* View button */}
                       <button
                         style={buttonStyle}
                         onClick={() => {
@@ -205,10 +227,12 @@ const Myclasses_view = () => {
                         View
                       </button>
 
-                      {/* Upload button */}
                       <button
                         style={buttonStyle}
-                        onClick={() => console.log('Upload for class', classItem)}
+                        onClick={() => {
+                          setSelectedClass(classItem);
+                          setUploadModalOpen(true);
+                        }}
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d3748')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f44336')}
                       >
@@ -216,7 +240,6 @@ const Myclasses_view = () => {
                         Upload
                       </button>
 
-                      {/* Update button */}
                       <button
                         style={buttonStyle}
                         onClick={() => console.log('Update class', classItem)}
@@ -237,25 +260,8 @@ const Myclasses_view = () => {
 
       {/* Modal for displaying class details */}
       {modalOpen && selectedClass && (
-        <div style={{
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          right: '0',
-          bottom: '0',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '8px',
-            maxWidth: '800px',
-            width: '100%',
-            position: 'relative',
-          }}>
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
             <button
               onClick={() => setModalOpen(false)}
               style={{
@@ -271,7 +277,31 @@ const Myclasses_view = () => {
             >
               ❌
             </button>
-            <Formdetails classDetails={selectedClass} /> {/* Pass class details to Formdetails */}
+            <Formdetails classDetails={selectedClass} />
+          </div>
+        </div>
+      )}
+
+      {/* Modal for uploading notes */}
+      {uploadModalOpen && selectedClass && (
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
+            <button
+              onClick={() => setUploadModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#f44336',
+              }}
+            >
+              ❌
+            </button>
+            <Formfornotes classData={selectedClass} onClose={() => setUploadModalOpen(false)} />
           </div>
         </div>
       )}

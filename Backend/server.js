@@ -2,10 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const classRoutes = require('./routes/classRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
-const path = require('path');
+const notesRoutes = require('./routes/notesRoutes'); // Import notes routes
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +42,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/users', authRoutes);
 app.use('/api', classRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/notes', notesRoutes); // Notes API routes
 
 // Static file error handling
 app.use('/uploads', (req, res, next) => {

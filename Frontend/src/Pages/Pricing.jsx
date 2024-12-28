@@ -2,7 +2,7 @@ import React from 'react';
 
 const Pricing = () => {
   return (
-    <div className="min-h-screen bg-gray-900 text-white py-16 mt-16">
+    <div className="min-h-screen bg-gray-900 text-white py-16 mt-12">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold text-center text-[#f44336] mb-12">Choose Your Plan</h2>
         
