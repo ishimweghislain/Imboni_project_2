@@ -18,13 +18,15 @@ import { SharecoursesPData } from '../Progress/SharecoursesP';
 import { NewassignmentPData } from '../Progress/NewassignmentP';
 
 import NewAssignmentForm from '../Work_models/New_assignment'; 
+import Quickassessment from '../Work_models/Quickassessment'; // Import Quick Assessment Component
 
 const Teachersdashboard = ({ activeToggle }) => {
   const [activeCategory, setActiveCategory] = useState(null);
   const [showOnlyBox, setShowOnlyBox] = useState(false);
   const [animateLeft, setAnimateLeft] = useState(false);
   const [animateBoxes, setAnimateBoxes] = useState(false);
-  const [showModal, setShowModal] = useState(false); // For the modal
+  const [showModal, setShowModal] = useState(false); // For New Assignment Modal
+  const [showQuickAssessmentModal, setShowQuickAssessmentModal] = useState(false); // For Quick Assessment Modal
 
   const barChartRef = useRef(null);
   const effectiveActiveToggle = activeToggle || 'notifications';
@@ -33,7 +35,7 @@ const Teachersdashboard = ({ activeToggle }) => {
     classes: MyclassesPData,
     passedassignments: PassedassignmentsPData,
     sharecourses: SharecoursesPData,
-    newassignment: NewassignmentPData,
+    new: NewassignmentPData, // Changed key to "new"
   };
 
   useEffect(() => {
@@ -102,7 +104,7 @@ const Teachersdashboard = ({ activeToggle }) => {
             {activeCategory === 'classes' && <Myclasses_view />}
             {activeCategory === 'passedassignments' && <Passedassignments_view />}
             {activeCategory === 'sharecourses' && <Sharecourses_view />}
-            {activeCategory === 'newassignment' && <Newassignment />}
+            {activeCategory === 'new' && <Newassignment />}
           </div>
         ) : (
           <>
@@ -123,13 +125,13 @@ const Teachersdashboard = ({ activeToggle }) => {
                     {key === 'classes' && <FaBook className="text-3xl" />}
                     {key === 'passedassignments' && <FaLaptopCode className="text-3xl" />}
                     {key === 'sharecourses' && <FaSearch className="text-3xl" />}
-                    {key === 'newassignment' && <FaCheckCircle className="text-3xl" />}
+                    {key === 'new' && <FaCheckCircle className="text-3xl" />}
                   </div>
                   <h3 className="font-semibold text-lg">
-                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+                    {key === 'passedassignments' ? 'View Passed' : key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
                   </h3>
                   <div className="mt-4 space-x-2">
-                    {key !== 'newassignment' && (
+                    {key !== 'new' && (
                       <button
                         className="px-4 py-2 bg-white text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
                         onClick={(e) => {
@@ -137,19 +139,43 @@ const Teachersdashboard = ({ activeToggle }) => {
                           handleViewClick(key);
                         }}
                       >
-                        View All
+                        {key === 'passedassignments' ? 'Assignments' : 'View All'}
                       </button>
                     )}
-                    {key === 'newassignment' && (
-                      <button
-                        className="px-4 py-2 bg-gray-200 text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowModal(true);
-                        }}
-                      >
-                        + New
-                      </button>
+                    {key === 'passedassignments' && (
+                      <>
+                        <button
+                          className="px-4 py-2 bg-gray-200 text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Add your logic for the "Assessments" button here (it doesn't lead anywhere for now)
+                          }}
+                        >
+                          Assessments
+                        </button>
+                      </>
+                    )}
+                    {key === 'new' && (
+                      <>
+                        <button
+                          className="px-4 py-2 bg-gray-200 text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowModal(true);
+                          }}
+                        >
+                          Assignment
+                        </button>
+                        <button
+                          className="px-4 py-2 bg-gray-200 text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowQuickAssessmentModal(true);
+                          }}
+                        >
+                          Assessment
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -169,7 +195,7 @@ const Teachersdashboard = ({ activeToggle }) => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal for New Assignment */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-8 rounded-lg w-1/2 max-h-[80vh] overflow-y-auto relative">
@@ -180,6 +206,21 @@ const Teachersdashboard = ({ activeToggle }) => {
               ❌
             </button>
             <NewAssignmentForm />
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Quick Assessment */}
+      {showQuickAssessmentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-lg w-1/2 max-h-[80vh] overflow-y-auto relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 text-xl hover:text-gray-800"
+              onClick={() => setShowQuickAssessmentModal(false)}
+            >
+              ❌
+            </button>
+            <Quickassessment />
           </div>
         </div>
       )}

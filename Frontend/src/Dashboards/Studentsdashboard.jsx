@@ -7,7 +7,6 @@ import Student_notification from '../Communication/Student_notification';
 import Student_chat from '../Communication/Student_chat';
 import Student_people from '../Communication/Student_people';
 
-import Myassignments_view from '../Models/Myassignments_view';
 import Mycourses_view from '../Models/Mycourses_view';
 import Myresearches_view from '../Models/Myresearches_view';
 import Viewmarks from '../Models/Viewmarks';
@@ -34,7 +33,7 @@ const Studentsdashboard = ({ activeToggle }) => {
   };
 
   useEffect(() => {
-    // Trigger animations after component mounts
+  
     setTimeout(() => setAnimateLeft(true), 200);
     setTimeout(() => setAnimateBoxes(true), 50);
   }, []);

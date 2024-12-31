@@ -14,10 +14,12 @@ import Contact from './Pages/Contact';
 import Login from './Components/Login';
 import Studentdashboard from './Dashboards/Studentsdashboard';
 import Teacherdashboard from './Dashboards/Teachersdashboard';
+import Quickassessment from './Work_models/Quickassessment'; // Import Quickassessment
+import Direct from './Work_models/Direct'; // Import Direct component
 
 const ProtectedRoute = ({ element: Element, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user'));
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -33,15 +35,14 @@ const DashboardLayout = ({ children }) => {
   const [activeToggle, setActiveToggle] = useState(null);
 
   const handleToggle = (type) => {
-   
     setActiveToggle(type);
   };
 
   return (
     <div>
       <Navigation onToggle={handleToggle} />
-      {React.cloneElement(children, { 
-        activeToggle: activeToggle 
+      {React.cloneElement(children, {
+        activeToggle: activeToggle,
       })}
       <Footer2 />
     </div>
@@ -69,7 +70,6 @@ function App() {
   return (
     <Router>
       <Routes>
-      
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<MainRouteWrapper element={<Home />} />} />
         <Route path="/about" element={<MainRouteWrapper element={<About />} />} />
@@ -79,8 +79,6 @@ function App() {
         <Route path="/blogs" element={<MainRouteWrapper element={<Blogs />} />} />
         <Route path="/contact" element={<MainRouteWrapper element={<Contact />} />} />
         <Route path="/login" element={<MainRouteWrapper element={<Login />} />} />
-        
-      
         <Route
           path="/student-dashboard"
           element={<ProtectedRoute element={<Studentdashboard />} allowedRoles={['student']} />}
@@ -89,6 +87,8 @@ function App() {
           path="/teacher-dashboard"
           element={<ProtectedRoute element={<Teacherdashboard />} allowedRoles={['teacher']} />}
         />
+        <Route path="/quick-assessment" element={<Quickassessment />} />
+        <Route path="/direct" element={<Direct />} />
       </Routes>
     </Router>
   );

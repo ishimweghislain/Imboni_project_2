@@ -1,38 +1,59 @@
 const express = require('express');
 const router = express.Router();
-const notesController = require('../controllers/notesController');
-const protect = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
+const notesController = require('../controllers/notesController');
+const auth = require('../middlewares/authMiddleware'); // Make sure you have this middleware
 
-// Create notes
-router.post('/', protect, upload.single('file'), notesController.createNotes);
+// Apply auth middleware to all routes
+router.use(auth);
+
+// Create notes - handles file upload
+router.post('/', 
+  upload.single('file'), // Handle single file upload
+  (req, res, next) => {
+    // Handle multer errors
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        success: false,
+        message: req.fileValidationError
+      });
+    }
+    next();
+  },
+  notesController.createNotes
+);
 
 // Get all notes
-router.get('/', protect, notesController.getNotes);
+router.get('/', notesController.getNotes);
 
-// Update notes
-router.put('/:id', protect, upload.single('file'), notesController.updateNotes);
+// Get notes for a specific teacher
+router.get('/teacher/:teacherId', notesController.getNotesByTeacher);
 
-// Delete notes
-router.delete('/:id', protect, notesController.deleteNotes);
-
-// Get notes by teacher ID
-router.get('/teacher/:teacherId', protect, notesController.getNotesByTeacher);
-
-// Get single note by ID
-router.get('/:id', protect, notesController.getNoteById);
+// Download notes file
+router.get('/download/:id', notesController.downloadNotesFile);
 
 // Error handling middleware
 router.use((err, req, res, next) => {
-  console.error('Notes route error:', err);
-  
-  if (req.file && req.file.path) {
-    fs.unlinkSync(req.file.path);
+  if (err instanceof multer.MulterError) {
+    // Handle multer-specific errors
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        message: 'File size is too large. Maximum size is 5MB.'
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
   
+  // Handle other errors
+  console.error('Route Error:', err);
   res.status(500).json({
     success: false,
-    message: err.message || 'Internal server error'
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 

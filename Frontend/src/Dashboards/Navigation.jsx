@@ -47,9 +47,9 @@ const Navigation = ({ onToggle }) => {
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-full py-2 px-4 rounded-md text-gray-800"
+                className="w-full py-2 px-4 rounded-md text-red-800"
               />
-              <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 " />
             </div>
           </div>
 

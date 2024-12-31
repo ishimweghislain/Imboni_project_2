@@ -3,12 +3,14 @@ import axios from 'axios';
 import { FaUpload, FaSearch, FaEye } from 'react-icons/fa';
 import Formdetails from '../Classes_info_notes/Formdetails';
 import Formfornotes from '../Uploads/Formfornotes';
+import Viewnotes from '../Uploads/Viewnotes'; 
 
 const Myclasses_view = () => {
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [viewNotesModalOpen, setViewNotesModalOpen] = useState(false); 
   const [selectedClass, setSelectedClass] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -117,7 +119,7 @@ const Myclasses_view = () => {
   const buttonContainerStyle = {
     display: 'flex',
     justifyContent: 'space-between',
-    gap: '8px',
+    gap: '4px',
   };
 
   const buttonIconStyle = {
@@ -242,7 +244,10 @@ const Myclasses_view = () => {
 
                       <button
                         style={buttonStyle}
-                        onClick={() => console.log('Update class', classItem)}
+                        onClick={() => {
+                          setSelectedClass(classItem);
+                          setViewNotesModalOpen(true);
+                        }}
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d3748')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f44336')}
                       >
@@ -302,6 +307,30 @@ const Myclasses_view = () => {
               ❌
             </button>
             <Formfornotes classData={selectedClass} onClose={() => setUploadModalOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Modal for viewing notes */}
+      {viewNotesModalOpen && selectedClass && (
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
+            <button
+              onClick={() => setViewNotesModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#f44336',
+              }}
+            >
+              ❌
+            </button>
+            <Viewnotes classData={selectedClass} onClose={() => setViewNotesModalOpen(false)} />
           </div>
         </div>
       )}

@@ -22,10 +22,10 @@ const notesSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  units: [{
-    unitNumber: Number,
-    subContent: String
-  }],
+  units: {
+    type: [String],
+    required: true
+  },
   filePath: {
     type: String,
     required: true
