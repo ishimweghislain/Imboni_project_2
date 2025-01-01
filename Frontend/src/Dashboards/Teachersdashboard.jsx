@@ -11,14 +11,15 @@ import Myclasses_view from '../Models/Myclasses_view';
 import Passedassignments_view from '../Models/PassedAssignments_view';
 import Sharecourses_view from '../Models/Sharecourses_view';
 import Newassignment from '../Models/Newassignment';
+import PassedAssessments_view from '../Models/PassedAssessments_view';
 
 import { MyclassesPData } from '../Progress/MyclassesP';
 import { PassedassignmentsPData } from '../Progress/PassedAssignmentsP';
 import { SharecoursesPData } from '../Progress/SharecoursesP';
 import { NewassignmentPData } from '../Progress/NewassignmentP';
 
-import NewAssignmentForm from '../Work_models/New_assignment'; 
-import Quickassessment from '../Work_models/Quickassessment'; // Import Quick Assessment Component
+import NewAssignmentForm from '../Work_models/New_assignment';
+import Quickassessment from '../Work_models/Quickassessment';
 
 const Teachersdashboard = ({ activeToggle }) => {
   const [activeCategory, setActiveCategory] = useState(null);
@@ -103,6 +104,7 @@ const Teachersdashboard = ({ activeToggle }) => {
             </div>
             {activeCategory === 'classes' && <Myclasses_view />}
             {activeCategory === 'passedassignments' && <Passedassignments_view />}
+            {activeCategory === 'passedassessments' && <PassedAssessments_view />}
             {activeCategory === 'sharecourses' && <Sharecourses_view />}
             {activeCategory === 'new' && <Newassignment />}
           </div>
@@ -148,7 +150,7 @@ const Teachersdashboard = ({ activeToggle }) => {
                           className="px-4 py-2 bg-gray-200 text-[#f44336] rounded-lg font-semibold hover:bg-gray-800"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Add your logic for the "Assessments" button here (it doesn't lead anywhere for now)
+                            handleViewClick('passedassessments'); // Navigate to Passed Assessments
                           }}
                         >
                           Assessments
