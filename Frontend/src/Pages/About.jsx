@@ -18,7 +18,7 @@ const About = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen mt-8">
+    <div className="bg-white min-h-screen mt-0 md:mt-8">
       <div
         className={`transition-transform duration-700 ease-in-out ${
           isVisible ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'

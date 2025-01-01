@@ -5,30 +5,28 @@ import axios from 'axios';
 const LoginForm = ({ onToggle, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const userData = {
-      email,
-      password
-    };
+    const userData = { email, password };
 
     try {
       const response = await axios.post('http://localhost:5000/api/users/login', userData);
       const { token, user } = response.data;
-
-     
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
-
       onLogin(user);
-
-      if (user.role === 'student') {
-        navigate('/student-dashboard');
-      } else {
-        navigate('/teacher-dashboard');
-      }
+      navigate(user.role === 'student' ? '/student-dashboard' : '/teacher-dashboard');
     } catch (error) {
       console.error('Login failed:', error.response?.data || error.message);
       alert('Invalid email or password');
@@ -36,12 +34,14 @@ const LoginForm = ({ onToggle, onLogin }) => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center" style={{ marginTop: '80px' }}>
-      <div className="form-container flex w-[800px] max-w-4xl rounded-lg shadow-md">
-        <div className="relative w-1/2">
-          <img src="/picture.jpeg" alt="Login" className="h-full w-full object-cover rounded-l-lg" />
-        </div>
-        <div className="flex w-1/2 flex-col items-center justify-center p-8 bg-[#f4f3f3]" >
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ marginTop: isMobile ? '40px' : '80px' }}>
+      <div className={`form-container flex ${isMobile ? 'w-full' : 'w-[800px]'} max-w-4xl rounded-lg shadow-md`}>
+        {!isMobile && (
+          <div className="relative w-1/2">
+            <img src="/picture.jpeg" alt="Login" className="h-full w-full object-cover rounded-l-lg" />
+          </div>
+        )}
+        <div className={`flex flex-col items-center justify-center p-8 bg-[#f4f3f3] ${isMobile ? 'w-full rounded-lg' : 'w-1/2 rounded-r-lg'}`}>
           <h2 className="mb-4 text-2xl font-bold">Sign In</h2>
           <form onSubmit={handleLogin} className="w-full">
             <div className="mb-4 w-full">
@@ -74,7 +74,7 @@ const LoginForm = ({ onToggle, onLogin }) => {
                 Sign In
               </button>
               <a
-                className="inline-block align-baseline font-bold text-md text-black hover:text-[#f44336]"
+                className="inline-block align-baseline font-bold text-sm md:text-md text-black hover:text-[#f44336]"
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -100,27 +100,27 @@ const CreateAccountForm = ({ onToggle }) => {
     role: 'student'
   });
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Make the API call to register the user
       const response = await axios.post('http://localhost:5000/api/users/register', formData);
       console.log(response.data);
       setLoading(false);
-      
-      // Store user data in localStorage
       localStorage.setItem('user', JSON.stringify(formData));
-
-      // Navigate to the corresponding dashboard based on user role
-      if (formData.role === 'student') {
-        navigate('/student-dashboard');
-      } else {
-        navigate('/teacher-dashboard');
-      }
+      navigate(formData.role === 'student' ? '/student-dashboard' : '/teacher-dashboard');
     } catch (error) {
       setLoading(false);
       console.error(error.response.data);
@@ -129,22 +129,23 @@ const CreateAccountForm = ({ onToggle }) => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center" style={{ marginTop: '90px' }}>
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ marginTop: isMobile ? '40px' : '90px' }}>
       {loading ? (
         <div className="flex items-center justify-center h-full">
           <div className="loader border-t-4 border-b-4 border-[#f44336] rounded-full w-12 h-12 animate-spin"></div>
-          {/* <p className="text-[#f44336] font-bold ml-4">😊 Your Account is being created !...</p> */}
         </div>
       ) : (
-        <div className="form-container flex w-[800px] max-w-4xl rounded-lg shadow-md">
-          <div className="relative w-1/2">
-            <img src="/picture.jpeg" alt="Create Account" className="h-full w-full object-cover rounded-l-lg" />
-          </div>
-          <div className="flex w-1/2 flex-col items-center justify-center p-8 bg-[#f4f3f3]">
-            <b><h2 className="heading mb-4 text-2xl">Create Account</h2></b>
+        <div className={`form-container flex ${isMobile ? 'w-full' : 'w-[800px]'} max-w-4xl rounded-lg shadow-md`}>
+          {!isMobile && (
+            <div className="relative w-1/2">
+              <img src="/picture.jpeg" alt="Create Account" className="h-full w-full object-cover rounded-l-lg" />
+            </div>
+          )}
+          <div className={`flex flex-col items-center justify-center p-8 bg-[#f4f3f3] ${isMobile ? 'w-full rounded-lg' : 'w-1/2 rounded-r-lg'}`}>
+            <h2 className="heading mb-4 text-2xl font-bold">Create Account</h2>
             <form onSubmit={handleSubmit} className="w-full">
-              <div className="mb-4 flex w-full">
-                <div className="mr-2 w-1/2">
+              <div className="mb-4 flex w-full flex-col md:flex-row">
+                <div className={`${isMobile ? 'mb-4' : 'mr-2'} w-full md:w-1/2`}>
                   <label htmlFor="firstName" className="block text-gray-700 font-bold mb-2">First Name</label>
                   <input
                     type="text"
@@ -155,7 +156,7 @@ const CreateAccountForm = ({ onToggle }) => {
                     placeholder="First Name"
                   />
                 </div>
-                <div className="ml-2 w-1/2">
+                <div className={`${isMobile ? '' : 'ml-2'} w-full md:w-1/2`}>
                   <label htmlFor="lastName" className="block text-gray-700 font-bold mb-2">Last Name</label>
                   <input
                     type="text"
@@ -201,15 +202,15 @@ const CreateAccountForm = ({ onToggle }) => {
                   <option value="teacher">Teacher</option>
                 </select>
               </div>
-              <div className="flex w-full items-center justify-between">
+              <div className="flex w-full items-center justify-between flex-col md:flex-row gap-4 md:gap-0">
                 <button
-                  className="bg-[#f44336] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  className="bg-[#f44336] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full md:w-auto"
                   type="submit"
                 >
                   Sign up
                 </button>
                 <a
-                  className="inline-block align-baseline font-bold text-md text-black hover:text-[#f44336]"
+                  className="inline-block align-baseline font-bold text-sm md:text-md text-black hover:text-[#f44336]"
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
@@ -232,7 +233,6 @@ const Login = () => {
   const [user, setUser] = useState(null);
 
   const toggleForm = () => setIsLogin(!isLogin);
-
   const handleLogin = (userData) => setUser(userData);
 
   return (

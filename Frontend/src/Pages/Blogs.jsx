@@ -29,7 +29,7 @@ const Blogs = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8 mt-16">
+    <div className="min-h-screen bg-gray-900 text-white p-8 mt-0 md:mt-16">
       <div className="container mx-auto">
         {/* Search Bar */}
         <div className="mb-8">
