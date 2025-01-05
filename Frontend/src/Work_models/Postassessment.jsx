@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { AiOutlineClose } from 'react-icons/ai'; 
 
-// Postassessment Modal component
 const Postassessment = ({ onClose }) => {
   const [assessmentTitle, setAssessmentTitle] = useState('');
   const [totalMarks, setTotalMarks] = useState('');
@@ -10,21 +10,18 @@ const Postassessment = ({ onClose }) => {
   const [error, setError] = useState('');
   const [isValid, setIsValid] = useState(true);
 
-  // Handle changes in questions' marks
   const handleMarksChange = (index, value) => {
     const updatedMarks = [...questionsMarks];
     updatedMarks[index] = value;
     setQuestionsMarks(updatedMarks);
   };
 
-  // Handle changes in question text
   const handleQuestionTextChange = (index, value) => {
     const updatedText = [...questionsText];
     updatedText[index] = value;
     setQuestionsText(updatedText);
   };
 
-  // Validate total marks
   const validateForm = () => {
     const sum = questionsMarks.reduce((acc, curr) => acc + parseInt(curr || 0), 0);
     if (sum !== parseInt(totalMarks)) {
@@ -36,31 +33,30 @@ const Postassessment = ({ onClose }) => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     validateForm();
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-[800px] max-w-full h-[90vh] relative overflow-auto">
-        {/* Close Button */}
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 mt-10">
+      <div className="bg-white rounded-lg p-6 w-[800px] max-w-full h-[90vh] relative overflow-auto shadow-lg">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700"
+          className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
+          aria-label="Close"
         >
-          ❌ {/* Close icon */}
+          <AiOutlineClose />
         </button>
 
         {/* Modal Heading */}
-        <h2 className="text-2xl font-semibold  mb-6 text-black">Prepare Assessment</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Prepare Assessment</h2>
 
         {/* Form Content */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Assessment Title */}
           <div>
-            <label htmlFor="assessmentTitle" className="block text-sm font-medium text-black">
+            <label htmlFor="assessmentTitle" className="block text-sm font-medium text-gray-700">
               <span>*</span> Assessment Title
             </label>
             <input
@@ -69,13 +65,13 @@ const Postassessment = ({ onClose }) => {
               value={assessmentTitle}
               onChange={(e) => setAssessmentTitle(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
             />
           </div>
 
           {/* Total Marks */}
           <div>
-            <label htmlFor="totalMarks" className="block text-sm font-medium text-black">
+            <label htmlFor="totalMarks" className="block text-sm font-medium text-gray-700">
               <span>*</span> Total Marks
             </label>
             <input
@@ -84,13 +80,13 @@ const Postassessment = ({ onClose }) => {
               value={totalMarks}
               onChange={(e) => setTotalMarks(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
             />
           </div>
 
           {/* Number of Questions */}
           <div>
-            <label htmlFor="numOfQuestions" className="block text-sm font-medium text-black">
+            <label htmlFor="numOfQuestions" className="block text-sm font-medium text-gray-700">
               <span>*</span> Number of Questions
             </label>
             <input
@@ -103,7 +99,7 @@ const Postassessment = ({ onClose }) => {
                 setQuestionsText(new Array(parseInt(e.target.value) || 0).fill(''));
               }}
               required
-              className=" text-black mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="text-gray-800 mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
 
@@ -111,19 +107,19 @@ const Postassessment = ({ onClose }) => {
           {Array.from({ length: numOfQuestions }).map((_, index) => (
             <div key={index} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-black">Question {index + 1}</label>
+                <label className="block text-sm font-medium text-gray-700">Question {index + 1}</label>
                 <textarea
                   value={questionsText[index] || ''}
                   onChange={(e) => handleQuestionTextChange(index, e.target.value)}
                   placeholder={`Enter question ${index + 1}`}
                   required
-                  className="text-black mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-gray-800 mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows="3"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-black">
+                <label className="block text-sm font-medium text-gray-700">
                   Marks for Question {index + 1}
                 </label>
                 <input
@@ -131,7 +127,7 @@ const Postassessment = ({ onClose }) => {
                   value={questionsMarks[index] || ''}
                   onChange={(e) => handleMarksChange(index, e.target.value)}
                   required
-                  className="text-black mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-gray-800 mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>

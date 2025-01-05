@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const PassedAssessmentsView = () => {
+const MyAssessmentsView = () => {
   const [assessments, setAssessments] = useState([]);
   const [error, setError] = useState(null);
-  const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate a backend fetch failure
+    
     try {
       throw new Error("Failed to fetch assessments. This is dummy data.");
     } catch (err) {
       setError(err.message);
 
-      // Dummy data for assessments
+      // Dummy data for assessments with a date field and state
       setAssessments([
-        { id: 1, courseName: "Math 101", totalSubmissions: 25 },
-        { id: 2, courseName: "Physics 202", totalSubmissions: 18 },
-        { id: 3, courseName: "Chemistry 303", totalSubmissions: 30 },
+        { id: 1, teacherName: "John Doe", courseName: "Math 101", date: new Date('2025-01-01T10:00:00'), state: "Direct" },
+        { id: 2, teacherName: "Jane Smith", courseName: "Physics 202", date: new Date('2025-01-02T14:30:00'), state: "Indirect" },
+        { id: 3, teacherName: "Michael Johnson", courseName: "Chemistry 303", date: new Date('2025-01-03T09:45:00'), state: "Direct" },
       ]);
     }
   }, []);
@@ -88,10 +89,18 @@ const PassedAssessmentsView = () => {
     }
   `;
 
+  const handleStart = (assessment) => {
+    if (assessment.state === "Direct") {
+      navigate(`/do-direct-assessment/${assessment.id}`);
+    } else {
+      navigate(`/do-indirect-assessment/${assessment.id}`);
+    }
+  };
+
   return (
     <div style={containerStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ color: '#f44336', margin: 0 }}>False Data - Passed Assessments</h2>
+        <h2 style={{ color: '#f44336', margin: 0 }}>My Assessments</h2>
       </div>
 
       {error && <div style={errorStyle}>{error}</div>}
@@ -117,34 +126,42 @@ const PassedAssessmentsView = () => {
         <table style={tableStyle}>
           <thead>
             <tr style={{ backgroundColor: '#f1f1f1' }}>
+              <th style={cellStyle}>Teacher Name</th>
               <th style={cellStyle}>Course Name</th>
-              <th style={cellStyle}>Total Submissions</th>
-              <th style={cellStyle}>Details</th>
+              <th style={cellStyle}>Date</th>
+              <th style={cellStyle}>State</th>
+              <th style={cellStyle}>Action</th>
             </tr>
           </thead>
           <tbody>
             {assessments.length === 0 ? (
               <tr>
-                <td colSpan="3" style={{ textAlign: 'center', padding: '16px', color: '#4a4a4a' }}>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '16px', color: '#4a4a4a' }}>
                   No assessments found
                 </td>
               </tr>
             ) : (
               assessments.map((assessment) => (
-                <tr
-                  key={assessment.id}
-                  className="hover-row"
-                  style={rowHoverStyle}
-                >
+                <tr key={assessment.id} className="hover-row" style={rowHoverStyle}>
+                  <td style={cellStyle}>{assessment.teacherName}</td>
                   <td style={cellStyle}>{assessment.courseName}</td>
-                  <td style={cellStyle}>{assessment.totalSubmissions}</td>
+                  <td style={cellStyle}>
+                    {assessment.date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </td>
+                  <td style={cellStyle}>{assessment.state}</td>
                   <td style={cellStyle}>
                     <button
-                      onClick={() => setSelectedAssessment(assessment)}
                       className="button-hover"
                       style={buttonStyle}
+                      onClick={() => handleStart(assessment)}
                     >
-                      View Details
+                      Start
                     </button>
                   </td>
                 </tr>
@@ -153,18 +170,8 @@ const PassedAssessmentsView = () => {
           </tbody>
         </table>
       </div>
-
-      {selectedAssessment && (
-        <div style={{ marginTop: '1rem', color: '#1f2937' }}>
-          <h3>Details for {selectedAssessment.courseName}</h3>
-          <p>Total Submissions: {selectedAssessment.totalSubmissions}</p>
-          <button onClick={() => setSelectedAssessment(null)} style={buttonStyle}>
-            Close
-          </button>
-        </div>
-      )}
     </div>
   );
 };
 
-export default PassedAssessmentsView;
+export default MyAssessmentsView;

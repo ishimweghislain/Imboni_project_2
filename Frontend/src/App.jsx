@@ -14,8 +14,13 @@ import Contact from './Pages/Contact';
 import Login from './Components/Login';
 import Studentdashboard from './Dashboards/Studentsdashboard';
 import Teacherdashboard from './Dashboards/Teachersdashboard';
-import Quickassessment from './Work_models/Quickassessment'; // Import Quickassessment
-import Direct from './Work_models/Direct'; // Import Direct component
+import Quickassessment from './Work_models/Quickassessment';
+import Direct from './Work_models/Direct';
+import Do_directassessment from './Work_models/Do_directassessment';
+import Do_indirectassessment from './Work_models/Do_indirectassessment';
+import MyAssessmentsView from './Models/Myassessments_view';
+import MyAssignmentsView from './Models/Myassignments_view';
+import Doassignments from './Work_models/Doassignments';
 
 const ProtectedRoute = ({ element: Element, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -89,6 +94,11 @@ function App() {
         />
         <Route path="/quick-assessment" element={<Quickassessment />} />
         <Route path="/direct" element={<Direct />} />
+        <Route path="/do-direct-assessment/:id" element={<Do_directassessment />} />
+        <Route path="/do-indirect-assessment/:id" element={<Do_indirectassessment />} />
+        <Route path="/my-assessments" element={<MyAssessmentsView />} />
+        <Route path="/my-assignments" element={<MyAssignmentsView />} />
+        <Route path="/do-assignment/:id" element={<Doassignments />} />
       </Routes>
     </Router>
   );

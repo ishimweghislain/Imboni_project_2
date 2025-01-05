@@ -54,13 +54,15 @@ const Myclasses_view = () => {
   };
 
   const containerStyle = {
-    width: '800px',
+    width: '785px',
     height: '450px',
     backgroundColor: 'white',
     borderRadius: '0.5rem',
     padding: '1rem',
     color: '#1f2937',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    marginLeft: '-20px',
+    marginTop: '-20px',
   };
 
   const tableContainerStyle = {
