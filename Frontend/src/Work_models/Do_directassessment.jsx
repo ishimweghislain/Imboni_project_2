@@ -67,7 +67,7 @@ const Do_directassessment = () => {
 
         <button
           onClick={() => navigate('/student-dashboard')}
-          className="absolute bottom-6 left-6 w-56 bg-[#f44336] text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+          className="absolute bottom-6 left-6 w-52 bg-[#f44336] text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
         >
           Back to Dashboard
         </button>
