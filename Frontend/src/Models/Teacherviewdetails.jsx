@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaFilePdf, FaFileImage } from 'react-icons/fa';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Teacherviewdetails = ({ assignment, onClose }) => {
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
@@ -8,6 +9,7 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
   const [studentSubmissions, setStudentSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAssignmentStudents = async () => {
@@ -27,7 +29,16 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
             }
           }
         );
-        setStudentSubmissions(response.data.students || []);
+        // Add a dummy student with 'submitted' status
+        const dummyStudent = {
+          _id: 'dummyStudentId',
+          name: 'John Doe',
+          class: 'Class 101',
+          acronym: 'JD',
+          submissionStatus: 'submitted',
+        };
+
+        setStudentSubmissions([...response.data.students, dummyStudent]); // Append the dummy student
         setError(null);
       } catch (error) {
         console.error('Error fetching assignment students:', error);
@@ -127,6 +138,10 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
     }
   };
 
+  const handleMarking = (studentId) => {
+    navigate(`/marking-assignments/${studentId}`);
+  };
+
   if (!assignment) {
     return null;
   }
@@ -134,7 +149,6 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto relative">
-        {/* Close Button */}
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-xl"
@@ -144,7 +158,6 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
 
         <h2 className="text-red-500 text-2xl font-bold mb-6">Assignment Details</h2>
 
-        {/* Assignment Information */}
         <div className="mb-6">
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
@@ -157,7 +170,6 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
             </div>
           </div>
 
-          {/* Assignment Content */}
           <div className="mb-6">
             <h3 className="font-semibold mb-2">Assignment Content</h3>
             {assignment.file ? (
@@ -190,7 +202,6 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
             )}
           </div>
 
-          {/* File Preview */}
           {filePreviewUrl && (
             <div className="mt-4 h-[500px] w-full flex justify-center items-center bg-gray-50 rounded-lg">
               {filePreviewUrl.toLowerCase().endsWith('.pdf') ? (
@@ -209,12 +220,9 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
               )}
             </div>
           )}
-          {fileError && (
-            <p className="text-red-500 mt-2">{fileError}</p>
-          )}
+          {fileError && <p className="text-red-500 mt-2">{fileError}</p>}
         </div>
 
-        {/* Student Submissions */}
         <div>
           <h3 className="font-semibold mb-4">Student Submissions</h3>
           {loading ? (
@@ -230,12 +238,13 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
                     <th className="border px-4 py-2 text-left">Class</th>
                     <th className="border px-4 py-2 text-left">Acronym</th>
                     <th className="border px-4 py-2 text-left">Status</th>
+                    <th className="border px-4 py-2 text-left">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {studentSubmissions.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="border px-4 py-2 text-center">
+                      <td colSpan="5" className="border px-4 py-2 text-center">
                         No student submissions found
                       </td>
                     </tr>
@@ -246,13 +255,18 @@ const Teacherviewdetails = ({ assignment, onClose }) => {
                         <td className="border px-4 py-2">{student.class}</td>
                         <td className="border px-4 py-2">{student.acronym}</td>
                         <td className="border px-4 py-2">
-                          <span className={`px-2 py-1 rounded ${
-                            student.submissionStatus === 'submitted' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
+                          <span className={`px-2 py-1 rounded ${student.submissionStatus === 'submitted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                             {student.submissionStatus}
                           </span>
+                        </td>
+                        <td className="border px-4 py-2">
+                          <button
+                            onClick={() => handleMarking(student._id)} 
+                            className={`px-4 py-2 ${student.submissionStatus === 'submitted' ? 'bg-green-500' : 'bg-gray-500 cursor-not-allowed'} text-white rounded hover:bg-green-600`}
+                            disabled={student.submissionStatus !== 'submitted'}
+                          >
+                            Mark 
+                          </button>
                         </td>
                       </tr>
                     ))

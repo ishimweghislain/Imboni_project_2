@@ -21,6 +21,9 @@ import Do_indirectassessment from './Work_models/Do_indirectassessment';
 import MyAssessmentsView from './Models/Myassessments_view';
 import MyAssignmentsView from './Models/Myassignments_view';
 import Doassignments from './Work_models/Doassignments';
+import MarkingDirectAssessments from './Marking/MarkDirectassessments';
+import MarkingIndirectAssessments from './Marking/MarkIndirectassessments';
+import MarkingAssignments from './Marking/MarkAssignments';
 
 const ProtectedRoute = ({ element: Element, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -92,6 +95,7 @@ function App() {
           path="/teacher-dashboard"
           element={<ProtectedRoute element={<Teacherdashboard />} allowedRoles={['teacher']} />}
         />
+        <Route path="/marking-assignments/:studentId" element={<MarkingAssignments />} />
         <Route path="/quick-assessment" element={<Quickassessment />} />
         <Route path="/direct" element={<Direct />} />
         <Route path="/do-direct-assessment/:id" element={<Do_directassessment />} />
@@ -99,6 +103,8 @@ function App() {
         <Route path="/my-assessments" element={<MyAssessmentsView />} />
         <Route path="/my-assignments" element={<MyAssignmentsView />} />
         <Route path="/do-assignment/:id" element={<Doassignments />} />
+        <Route path="/marking-direct-assessments/:id" element={<MarkingDirectAssessments />} />
+        <Route path="/marking-indirect-assessments/:id" element={<MarkingIndirectAssessments />} />
       </Routes>
     </Router>
   );
