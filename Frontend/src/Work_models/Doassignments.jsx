@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaSearch, FaDownload, FaFile } from 'react-icons/fa';
+import SubmitAssignment from '../Work_models/Submitassignment';
 
 const Doassignment = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const Doassignment = () => {
   const [messages, setMessages] = useState({});
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const [assignmentData] = useState({
     title: "React Javascript",
@@ -117,7 +119,15 @@ const Doassignment = () => {
       <div className="flex-1 flex ml-64">
         {/* File Download Section */}
         <div className="w-1/2 p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Assignment Files</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">Assignment Files</h2>
+            <button
+              onClick={() => setIsSubmitModalOpen(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            >
+              Submit Assignment
+            </button>
+          </div>
           <div className="space-y-4">
             {assignmentData.files.map((file) => (
               <div
@@ -248,6 +258,11 @@ const Doassignment = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Submit Assignment Modal */}
+      {isSubmitModalOpen && (
+        <SubmitAssignment onClose={() => setIsSubmitModalOpen(false)} />
       )}
     </div>
   );
