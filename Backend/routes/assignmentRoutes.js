@@ -3,7 +3,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
-const protect = require('../middlewares/authMiddleware');
+const { auth } = require('../middlewares/authMiddleware'); // Changed to destructure auth
 
 const { 
   createAssignment, 
@@ -45,8 +45,8 @@ const upload = multer({
 });
 
 // Protected routes - only accessible to authenticated users
-router.post('/', protect, upload.single('file'), createAssignment);
-router.get('/', protect, getAssignments);
-router.get('/:assignmentId/students', protect, getAssignmentStudents);
+router.post('/', auth, upload.single('file'), createAssignment); // Changed protect to auth
+router.get('/', auth, getAssignments); // Changed protect to auth
+router.get('/:assignmentId/students', auth, getAssignmentStudents); // Changed protect to auth
 
 module.exports = router;

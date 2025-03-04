@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../middlewares/uploadMiddleware');
 const notesController = require('../controllers/notesController');
-const auth = require('../middlewares/authMiddleware'); // Make sure you have this middleware
+const { auth } = require('../middlewares/authMiddleware'); // Destructure auth
 
 // Apply auth middleware to all routes
 router.use(auth);
