@@ -11,6 +11,8 @@ const authRoutes = require('./routes/authRoutes');
 const classRoutes = require('./routes/classRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const notesRoutes = require('./routes/notesRoutes');
+const schoolRoutes = require('./routes/schoolRoutes');
+const academicLevelRoutes = require('./routes/academicLevelRoutes'); // Ensure this exists
 
 const app = express();
 
@@ -23,7 +25,7 @@ if (!fs.existsSync(uploadDir)) {
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://localhost:5173', // Adjust if your frontend uses a different port
   credentials: true
 }));
 
@@ -46,7 +48,6 @@ const connectDB = async (retries = 5) => {
         console.error('All connection attempts failed. Exiting...');
         process.exit(1);
       }
-      // Wait for 5 seconds before retrying
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
   }
@@ -57,9 +58,11 @@ connectDB();
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/classes', classRoutes);
+app.use('/api/classes', classRoutes); // New class routes
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/schools', schoolRoutes);
+app.use('/api', academicLevelRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -81,13 +84,11 @@ app.use((err, req, res, next) => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Promise Rejection:', err);
-  // Don't exit the process, just log the error
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
-  // Exit the process on uncaught exceptions
   process.exit(1);
 });
 
