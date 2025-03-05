@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import ProfileModal from '../Profile/ProfileModel'; // Changed import to match your comment
+import ProfileModal from '../Profile/ProfileModel'; 
 
 const LoginForm = ({ onToggle, onLogin }) => {
   const [email, setEmail] = useState('');
@@ -126,8 +126,14 @@ const CreateAccountForm = ({ onToggle }) => {
     }
   };
 
-  const handleProfileComplete = () => {
+  const handleProfileComplete = (data) => {
+    const { schoolId, academicLevelId, classId, programId } = data;
     navigate(formData.role === 'student' ? '/student-dashboard' : '/teacher-dashboard');
+    setShowProfileModal(false);
+    if (schoolId) localStorage.setItem('selectedSchoolId', schoolId);
+    if (academicLevelId) localStorage.setItem('selectedAcademicLevelId', academicLevelId);
+    if (classId) localStorage.setItem('selectedClassId', classId);
+    if (programId) localStorage.setItem('selectedProgramId', programId); // Store programId
   };
 
   return (

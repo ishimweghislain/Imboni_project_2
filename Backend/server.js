@@ -12,7 +12,8 @@ const classRoutes = require('./routes/classRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const notesRoutes = require('./routes/notesRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
-const academicLevelRoutes = require('./routes/academicLevelRoutes'); // Ensure this exists
+const academicLevelRoutes = require('./routes/academicLevelRoutes');
+const programRoutes = require('./routes/programRoutes'); // Ensure this is correctly imported
 
 const app = express();
 
@@ -58,11 +59,19 @@ connectDB();
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/classes', classRoutes); // New class routes
+app.use('/api/classes', classRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/schools', schoolRoutes);
 app.use('/api', academicLevelRoutes);
+app.use('/api/programs', programRoutes); // Ensure this line is present and correct
+
+// Add debug logging for registered routes
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log('Registered Route:', r.route.path);
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
